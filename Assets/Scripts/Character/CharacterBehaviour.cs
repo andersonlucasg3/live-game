@@ -39,6 +39,7 @@ public class CharacterBehaviour : MonoBehaviour {
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {
         this._footIK.OnDrawGizmos();
+        this._walk.OnDrawGizmos();
     }
 #endif
 }
