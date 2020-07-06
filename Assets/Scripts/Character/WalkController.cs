@@ -11,6 +11,7 @@ class WalkController : InputController.IMovementListener {
     private AnimatorStateInfo _stateInfo;
 
     [SerializeField] private float _movementAcceleration = 5F;
+    [SerializeField] private float _movementDampSpeed = 0.05F;
 
     public Action<bool> isMovingSetter { private get; set; }
 
@@ -31,9 +32,9 @@ class WalkController : InputController.IMovementListener {
 
         bool isMoving = this._movementVector.target != Vector2.zero;
         this.isMovingSetter(isMoving);
-        this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
-        this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection());
+        this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle(), this._movementDampSpeed, Time.deltaTime);
+        this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude, this._movementDampSpeed, Time.deltaTime);
+        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
         this._playerDirectionVector.target = this.GetDirectionFromCamera();
     }
@@ -74,6 +75,6 @@ class WalkController : InputController.IMovementListener {
         public static readonly int directionProperty = Animator.StringToHash("direction");
         public static readonly int angleProperty = Animator.StringToHash("angle");
 
-        public static readonly int walkMovementTreeState = Animator.StringToHash("MovementLayer.Walk Movement Tree");
+        public static readonly int walkMovementTreeState = Animator.StringToHash("MovementLayer.Movement Tree");
     }
 }

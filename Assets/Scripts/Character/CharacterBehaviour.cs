@@ -9,8 +9,10 @@ public class CharacterBehaviour : MonoBehaviour {
     protected virtual void Awake() {
         var animator = this.GetComponent<Animator>();
         this._walk.Configure(animator, this._camera.transform);
-        this._footIK.Configure(animator);
         this._walk.isMovingSetter = this._footIK.SetIsMoving;
+
+        this._footIK.Configure(animator);
+        this._footIK.isEnabled = false;
 
         this._input = new InputController();
         this._input.AddListener(this._walk);

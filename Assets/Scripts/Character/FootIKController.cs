@@ -84,6 +84,7 @@ public class FootIKController {
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
+        if (!this.isEnabled) { return; }
         if (this._leftFoot == null || this._rightFoot == null) { return; }
 
         var leftFootRay = this.CreateFootRay(this._leftFoot.position);
