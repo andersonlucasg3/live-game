@@ -1220,11 +1220,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _target: {fileID: 311905887}
-  _followSpeed: 10
-  _positionDisplacement: {x: 0.9, y: 1.75, z: -2.22}
+  _followSpeed: 2.5
+  _positionDisplacement: {x: 0.9, y: 0.5, z: -2.22}
   _lookAtDisplacement: {x: 0.8, y: 1.4, z: 0}
-  _cameraMinRotation: 0
-  _cameraMaxRotation: 0
+  _cameraMinRotation: -45
+  _cameraMaxRotation: 45
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0
