@@ -3,10 +3,12 @@ using UnityEngine;
 
 [Serializable]
 class WalkController : InputController.IMovementListener {
+    private Transform _player;
     private Transform _camera;
     private Animator _animator;
     private AcceleratedVector2 _movementVector;
-    private AcceleratedVector3 _directionVector;
+    private AcceleratedVector3 _playerDirectionVector;
+    private AnimatorStateInfo _stateInfo;
 
     [SerializeField] private float _movementAcceleration = 5F;
 
@@ -14,43 +16,64 @@ class WalkController : InputController.IMovementListener {
 
     public void Configure(Animator animator, Transform camera) {
         this._animator = animator;
+        this._player = animator.transform;
         this._camera = camera;
 
-        this._directionVector.acceleration = this._movementAcceleration;
         this._movementVector.acceleration = this._movementAcceleration;
+        this._playerDirectionVector.acceleration = this._movementAcceleration;
     }
 
     public void Update() {
         this._movementVector.Update();
-        this._directionVector.Update();
+        this._playerDirectionVector.Update();
 
-        this.LookToCameraDirection();
+        this._stateInfo = this._animator.GetCurrentAnimatorStateInfo(0);
 
-        bool isMoving = this._directionVector.target != Vector3.zero;
+        bool isMoving = this._movementVector.target != Vector2.zero;
         this.isMovingSetter(isMoving);
-        this._animator.SetBool(AnimationKeys.isMoving, isMoving);
+        this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
+        this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
+        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection());
 
-
+        this._playerDirectionVector.target = this.GetDirectionFromCamera();
     }
 
-    private void LookToCameraDirection() {
-        if (this._directionVector.current != Vector3.zero) {
-            var direction = this._camera.InverseTransformDirection(this._directionVector.current);
-            this._animator.transform.forward = direction;
-        }
+    private Vector3 GetDirectionFromCamera() {
+        var moveDirection = this._camera.rotation * this._movementVector.current.ToDirectionVector();
+        moveDirection.y = 0F;
+        return moveDirection;
     }
+
+    private float CalculateAngle() {
+        var cameraDirection = this.GetDirectionFromCamera();
+        var playerDirection = this._player.forward;
+        var angle = Vector3.Angle(cameraDirection, playerDirection);
+        var cross = Vector3.Cross(cameraDirection, playerDirection);
+        if (cross.y > 0) { angle *= -1; }
+        return angle;
+    }
+
+    private float DistanceFromDirection() {
+        var inputDirection = this._player.forward;
+        var playerDirection = this._playerDirectionVector.current;
+        return Vector3.Cross(inputDirection, playerDirection).y;
+    }
+
+    private bool IsInMovementState() => this._stateInfo.fullPathHash == AnimationKeys.walkMovementTreeState;
 
     #region Inputs
 
     void InputController.IMovementListener.Move(Vector2 inputDirection) {
-        this._directionVector.target = inputDirection.ToDirectionVector();
+        this._movementVector.target = inputDirection;
     }
 
     #endregion
 
     private struct AnimationKeys {
-        public static readonly int verticalProperty = Animator.StringToHash("vertical");
-        public static readonly int horizontalProperty = Animator.StringToHash("horizontal");
-        public static readonly int isMoving = Animator.StringToHash("isMoving");
+        public static readonly int speedProperty = Animator.StringToHash("speed");
+        public static readonly int directionProperty = Animator.StringToHash("direction");
+        public static readonly int angleProperty = Animator.StringToHash("angle");
+
+        public static readonly int walkMovementTreeState = Animator.StringToHash("MovementLayer.Walk Movement Tree");
     }
 }
