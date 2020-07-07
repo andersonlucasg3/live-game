@@ -149,9 +149,18 @@ BlendTree:
   m_Name: Turning Left
   m_Childs:
   - serializedVersion: 2
+    m_Motion: {fileID: -203655887218126122, guid: ccca4d252af424ab6a490e9327087b1e,
+      type: 3}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 1
+    m_CycleOffset: 0
+    m_DirectBlendParameter: speed
+    m_Mirror: 0
+  - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 4811a28abb6bf4555bce25f39be13bde,
       type: 3}
-    m_Threshold: 45
+    m_Threshold: 80
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -160,7 +169,7 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 57de11b94603d4982a9bb4ccab1cbff8,
       type: 3}
-    m_Threshold: 135
+    m_Threshold: 160
     m_Position: {x: 0, y: 0}
     m_TimeScale: 1
     m_CycleOffset: 0
@@ -168,8 +177,8 @@ BlendTree:
     m_Mirror: 0
   m_BlendParameter: angle
   m_BlendParameterY: speed
-  m_MinThreshold: 45
-  m_MaxThreshold: 135
+  m_MinThreshold: 0
+  m_MaxThreshold: 160
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0
@@ -806,25 +815,34 @@ BlendTree:
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 5621dcd796edc4af39c937641f6a6edf,
       type: 3}
-    m_Threshold: -135
+    m_Threshold: -160
     m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
+    m_TimeScale: 0.65991837
     m_CycleOffset: 0
     m_DirectBlendParameter: speed
     m_Mirror: 0
   - serializedVersion: 2
     m_Motion: {fileID: -203655887218126122, guid: 2aaa729945eb34f228362d7946270ccd,
       type: 3}
-    m_Threshold: -45
+    m_Threshold: -80
     m_Position: {x: 0, y: 0}
-    m_TimeScale: 1
+    m_TimeScale: 0.6735545
+    m_CycleOffset: 0
+    m_DirectBlendParameter: speed
+    m_Mirror: 0
+  - serializedVersion: 2
+    m_Motion: {fileID: -203655887218126122, guid: ccca4d252af424ab6a490e9327087b1e,
+      type: 3}
+    m_Threshold: 0
+    m_Position: {x: 0, y: 0}
+    m_TimeScale: 48493916
     m_CycleOffset: 0
     m_DirectBlendParameter: speed
     m_Mirror: 0
   m_BlendParameter: angle
   m_BlendParameterY: speed
-  m_MinThreshold: -135
-  m_MaxThreshold: -45
+  m_MinThreshold: -160
+  m_MaxThreshold: 0
   m_UseAutomaticThresholds: 0
   m_NormalizedBlendValues: 0
   m_BlendType: 0

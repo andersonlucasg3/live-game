@@ -12,7 +12,7 @@ public class CharacterBehaviour : MonoBehaviour {
         this._walk.isMovingSetter = this._footIK.SetIsMoving;
 
         this._footIK.Configure(animator);
-        this._footIK.isEnabled = false;
+        this._footIK.isEnabled = true;
 
         this._input = new InputController();
         this._input.AddListener(this._walk);
@@ -28,13 +28,6 @@ public class CharacterBehaviour : MonoBehaviour {
     protected virtual void OnAnimatorIK(int layerIndex) {
         this._footIK.OnAnimatorIK();
     }
-
-    #region Animation Events
-
-    public void EnableRightFootIK() => this._footIK.EnableRightFoot();
-    public void EnableLeftFootIK() => this._footIK.EnableLeftFoot();
-
-    #endregion
 
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {

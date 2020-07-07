@@ -6,12 +6,10 @@ public class FootIKController {
     private Animator _animator;
     private Transform _leftFoot;
     private Transform _rightFoot;
-    private bool _isRightFootIKEnabled = false;
-    private bool _isLeftFootIKEnabled = false;
     private Vector3 _leftFootIKPosition = Vector3.zero;
     private Vector3 _rightFootIKPosition = Vector3.zero;
-    private Vector3 _leftFootPosition = Vector3.zero;
-    private Vector3 _rightFootPosition = Vector3.zero;
+    private FootHitInfo? _leftFootInfo = null;
+    private FootHitInfo? _rightFootInfo = null;
     private AcceleratedValue _leftFootWeight = AcceleratedValue.zero;
     private AcceleratedValue _rightFootWeight = AcceleratedValue.zero;
     private bool _isMoving;
@@ -35,16 +33,16 @@ public class FootIKController {
     public void Update() {
         if (!this.isEnabled) { return; }
 
-        if (!this._isMoving || this._isLeftFootIKEnabled) {
+        if (!this._isMoving) {
             this._leftFootWeight.target = 1;
-            this._leftFootPosition = this.CalculateFootTargetPosition(this._leftFootIKPosition) ?? this._leftFootIKPosition;
+            this._leftFootInfo = this.CalculateFootTargetPosition(this._leftFootIKPosition);
         } else {
             this._leftFootWeight.target = 0;
         }
 
-        if (!this._isMoving || this._isRightFootIKEnabled) {
+        if (!this._isMoving) {
             this._rightFootWeight.target = 1;
-            this._rightFootPosition = this.CalculateFootTargetPosition(this._rightFootIKPosition) ?? this._rightFootIKPosition;
+            this._rightFootInfo = this.CalculateFootTargetPosition(this._rightFootIKPosition);
         } else {
             this._rightFootWeight.target = 0;
         }
@@ -59,25 +57,21 @@ public class FootIKController {
         this._rightFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.RightFoot);
         this._leftFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.LeftFoot);
 
-        if (!this._isMoving || this._isLeftFootIKEnabled) {
-            this._animator.SetIKPosition(AvatarIKGoal.LeftFoot, this._leftFootPosition);
-            this._animator.SetIKPositionWeight(AvatarIKGoal.LeftFoot, this._leftFootWeight.current);
+        if (this._leftFootInfo.HasValue) {
+            this.DoFootIK(AvatarIKGoal.LeftFoot, this._leftFootInfo.Value, this._leftFootWeight, this._leftFoot);
         }
 
-        if (!this._isMoving || this._isRightFootIKEnabled) {
-            this._animator.SetIKPosition(AvatarIKGoal.RightFoot, this._rightFootPosition);
-            this._animator.SetIKPositionWeight(AvatarIKGoal.RightFoot, this._rightFootWeight.current);
+        if (this._rightFootInfo.HasValue) {
+            this.DoFootIK(AvatarIKGoal.RightFoot, this._rightFootInfo.Value, this._rightFootWeight, this._rightFoot);
         }
     }
 
-    public void EnableRightFoot() {
-        this._isRightFootIKEnabled = true;
-        this._isLeftFootIKEnabled = false;
-    }
+    private void DoFootIK(AvatarIKGoal goal, FootHitInfo info, AcceleratedValue weight, Transform foot) {
+        this._animator.SetIKPosition(goal, info.point);
+        this._animator.SetIKPositionWeight(goal, weight.current);
 
-    public void EnableLeftFoot() {
-        this._isLeftFootIKEnabled = true;
-        this._isRightFootIKEnabled = false;
+        this._animator.SetIKRotation(goal, this.RotatedFoot(info.normal, foot));
+        this._animator.SetIKRotationWeight(goal, weight.current);
     }
 
     public void SetIsMoving(bool isMoving) => this._isMoving = isMoving;
@@ -86,6 +80,7 @@ public class FootIKController {
     public void OnDrawGizmos() {
         if (!this.isEnabled) { return; }
         if (this._leftFoot == null || this._rightFoot == null) { return; }
+        if (this._leftFootInfo == null || this._rightFootInfo == null) { return; }
 
         var leftFootRay = this.CreateFootRay(this._leftFoot.position);
         var rightFootRay = this.CreateFootRay(this._rightFoot.position);
@@ -98,19 +93,44 @@ public class FootIKController {
             Gizmos.DrawSphere(rPos, radius);
         }
 
+        void DrawLine(Vector3 point, Vector3 direction, Color color, float length = 1F) {
+            Gizmos.color = color;
+            Gizmos.DrawLine(point, point + direction * length);
+        }
+
         DrawSpheres(this._rightFootIKPosition, this._leftFootIKPosition, Color.yellow, 0.04F);
-        DrawSpheres(this._rightFootPosition, this._leftFootPosition, Color.blue, 0.03F);
-        DrawSpheres(this._rightFoot.position, this._leftFoot.position, Color.red, 0.02F);        
+        DrawSpheres(this._rightFootInfo.Value.point, this._leftFootInfo.Value.point, Color.blue, 0.03F);
+        DrawSpheres(this._rightFoot.position, this._leftFoot.position, Color.red, 0.02F);
+
+        DrawLine(this._rightFootInfo.Value.point, this._rightFootInfo.Value.normal, Color.green, 0.25F);
     }
 #endif
 
-    private Vector3? CalculateFootTargetPosition(Vector3 position) {
+    private Quaternion RotatedFoot(Vector3 normal, Transform foot) {
+        Vector3 slopeCorrected = Vector3.Cross(normal, foot.right);
+        return Quaternion.LookRotation(slopeCorrected, normal);
+    }
+
+    private FootHitInfo? CalculateFootTargetPosition(Vector3 position) {
         var ray = this.CreateFootRay(position);
         if (!Physics.Raycast(ray, out RaycastHit hit, this._footRaycastDistance, this._footIgnoreCollisionLayerMask)) { return null; }
-        return hit.point + Vector3.up * this._footHeightCorrection;
+        return FootHitInfo.zero.Set(hit.point + Vector3.up * this._footHeightCorrection, hit.normal);
     }
 
     private Ray CreateFootRay(Vector3 pos) {
         return new Ray(pos + Vector3.up * 0.5F, Vector3.down);
+    }
+
+    struct FootHitInfo {
+        public static readonly FootHitInfo zero = new FootHitInfo();
+
+        public Vector3 point;
+        public Vector3 normal;
+
+        public FootHitInfo Set(Vector3 point, Vector3 normal) {
+            this.point = point;
+            this.normal = normal;
+            return this;
+        }
     }
 }
