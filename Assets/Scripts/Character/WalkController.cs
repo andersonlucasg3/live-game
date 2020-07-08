@@ -15,6 +15,7 @@ class WalkController : InputController.IMovementListener {
     private float _speedMultiplier = 1F;
 
     [SerializeField] private float _movementAcceleration = 5F;
+    [SerializeField] private float _directionAcceleration = 2.5F;
     [SerializeField] private float _movementDampSpeed = 0.05F;
 
     public Action<bool> isMovingSetter { private get; set; }
@@ -25,7 +26,7 @@ class WalkController : InputController.IMovementListener {
         this._camera = camera;
 
         this._movementVector.acceleration = this._movementAcceleration;
-        this._playerDirectionVector.acceleration = this._movementAcceleration;
+        this._playerDirectionVector.acceleration = this._directionAcceleration;
     }
 
     public void Configure(InputController input) {
@@ -43,10 +44,15 @@ class WalkController : InputController.IMovementListener {
         bool isMoving = this._movementVector.target != Vector2.zero;
         var isPivoting = this.IsPivoting();
         this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude, this._movementDampSpeed, Time.deltaTime);
         this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
         this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
+
+        var hasMovement = this._movementVector.target.magnitude > 0F;
+        this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
+        if (hasMovement) {
+            this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude, this._movementDampSpeed, Time.deltaTime);
+        }
     }
 
     private Vector3 GetDirectionFromCamera() {
@@ -77,8 +83,9 @@ class WalkController : InputController.IMovementListener {
     private bool IsPivoting()
         => AnimationKeys.walkTurnStates.Contains(this._stateInfo.fullPathHash) && 1F - this._stateInfo.normalizedTime >= 0.1F;
 
-    private void UpdateMovementVector(Vector2 direction)
-        => this._movementVector.target = Vector2.ClampMagnitude(direction, 1) * this._speedMultiplier;
+    private void UpdateMovementVector(Vector2 direction) {
+        this._movementVector.target = Vector2.ClampMagnitude(direction, 1) * this._speedMultiplier;
+    }
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
@@ -102,6 +109,7 @@ class WalkController : InputController.IMovementListener {
     #region Inputs
 
     void InputController.IMovementListener.Move(Vector2 inputDirection) {
+
         this.UpdateMovementVector(inputDirection);
     }
 
@@ -116,6 +124,7 @@ class WalkController : InputController.IMovementListener {
         public static readonly int speedProperty = Animator.StringToHash("speed");
         public static readonly int directionProperty = Animator.StringToHash("direction");
         public static readonly int angleProperty = Animator.StringToHash("angle");
+        public static readonly int hasMovementProperty = Animator.StringToHash("hasMovement");
 
         public static readonly int idleTurnLeft45State = Animator.StringToHash("MovementLayer.Idle Turn Left 45");
         public static readonly int idleTurnLeft90State = Animator.StringToHash("MovementLayer.Idle Turn Left 90");
