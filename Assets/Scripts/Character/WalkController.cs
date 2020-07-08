@@ -80,8 +80,11 @@ class WalkController : InputController.IMovementListener {
         return Vector3.Cross(inputDirection, playerDirection).y * 2;
     }
 
-    private bool IsPivoting()
-        => AnimationKeys.walkTurnStates.Contains(this._stateInfo.fullPathHash) && 1F - this._stateInfo.normalizedTime >= 0.1F;
+    private bool IsPivoting() {
+        return (AnimationKeys.walkTurnStates.Contains(this._stateInfo.fullPathHash) ||
+            AnimationKeys.idleTurnStates.Contains(this._stateInfo.fullPathHash)) &&
+            1F - this._stateInfo.normalizedTime >= 0.1F;
+    }
 
     private void UpdateMovementVector(Vector2 direction) {
         this._movementVector.target = Vector2.ClampMagnitude(direction, 1) * this._speedMultiplier;
@@ -138,6 +141,15 @@ class WalkController : InputController.IMovementListener {
         public static readonly int walkTurnLeft180State = Animator.StringToHash("MovementLayer.Walk Turn Left 180");
         public static readonly int walkTurnRight90State = Animator.StringToHash("MovementLayer.Walk Turn Right 90");
         public static readonly int walkTurnRight180State = Animator.StringToHash("MovementLayer.Walk Turn Right 180");
+
+        public static readonly int[] idleTurnStates = new int[] {
+            idleTurnLeft45State,
+            idleTurnLeft90State,
+            idleTurnLeft180State,
+            idleTurnRight45State,
+            idleTurnRight90State,
+            idleTurnRight180State
+        };
 
         public static readonly int[] walkTurnStates = new int[] {
             walkTurnLeft90State,
