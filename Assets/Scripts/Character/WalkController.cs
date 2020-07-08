@@ -46,13 +46,12 @@ class WalkController : InputController.IMovementListener {
         this.isMovingSetter(isMoving || isPivoting);
         this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
-        this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
-
-        var hasMovement = this._movementVector.target.magnitude > 0F;
+        var hasMovement = this._movementVector.current.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
-        if (hasMovement) {
-            this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
-        }
+        this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
+
+        if (hasMovement) { this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle()); }
+        else { this._animator.SetFloat(AnimationKeys.angleProperty, 0F); }
     }
 
     private Vector3 GetDirectionFromCamera() {
@@ -112,7 +111,6 @@ class WalkController : InputController.IMovementListener {
     #region Inputs
 
     void InputController.IMovementListener.Move(Vector2 inputDirection) {
-
         this.UpdateMovementVector(inputDirection);
     }
 
@@ -136,7 +134,6 @@ class WalkController : InputController.IMovementListener {
         public static readonly int idleTurnRight90State = Animator.StringToHash("MovementLayer.Idle Turn Right 90");
         public static readonly int idleTurnRight180State = Animator.StringToHash("MovementLayer.Idle Turn Right 180");
 
-        public static readonly int walkMovementTreeState = Animator.StringToHash("MovementLayer.Movement Tree");
         public static readonly int walkTurnLeft90State = Animator.StringToHash("MovementLayer.Walk Turn Left 90");
         public static readonly int walkTurnLeft180State = Animator.StringToHash("MovementLayer.Walk Turn Left 180");
         public static readonly int walkTurnRight90State = Animator.StringToHash("MovementLayer.Walk Turn Right 90");
