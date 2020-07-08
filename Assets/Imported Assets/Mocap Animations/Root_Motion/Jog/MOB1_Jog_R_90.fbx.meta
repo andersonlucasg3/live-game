@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 0ad7a76436d5cf245814146c3e37bbcf
+guid: e334f05dba5d38344bd3320a4824f128
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable:
@@ -458,7 +458,7 @@ ModelImporter:
     second: MotusMan_v55
   - first:
       74: 7400000
-    second: MOB1_Run_F_To_Stand_Relaxed_RU
+    second: MOB1_Jog_R_90
   - first:
       95: 9500000
     second: //RootNode
@@ -472,7 +472,7 @@ ModelImporter:
       name: MotusMan_Phong1
     second: {fileID: 2100000, guid: 6eb380112487d4c40b7f63500e54ebd8, type: 2}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 0
@@ -499,8 +499,8 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: MOB1_Run_F_To_Stand_Relaxed_RU
-      takeName: MOB1_Run_F_To_Stand_Relaxed_RU
+      name: MOB1_Jog_R_90
+      takeName: MOB1_Jog_R_90
       internalID: 0
       firstFrame: 0
       lastFrame: 70

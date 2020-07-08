@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 344523ec3c0b5254face23d1b96c72c4
+guid: ce823bf64dc413447b7384b51f67040e
 ModelImporter:
   serializedVersion: 19301
   internalIDToNameTable:
@@ -458,7 +458,7 @@ ModelImporter:
     second: MotusMan_v55
   - first:
       74: 7400000
-    second: MOB1_Run_L_Loop
+    second: MOB1_Run_FL_Loop
   - first:
       95: 9500000
     second: //RootNode
@@ -472,7 +472,7 @@ ModelImporter:
       name: MotusMan_Phong1
     second: {fileID: 2100000, guid: 6eb380112487d4c40b7f63500e54ebd8, type: 2}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 0
@@ -499,8 +499,8 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: MOB1_Run_L_Loop
-      takeName: MOB1_Run_L_Loop
+      name: MOB1_Run_FL_Loop
+      takeName: MOB1_Run_FL_Loop
       internalID: 0
       firstFrame: 0
       lastFrame: 17

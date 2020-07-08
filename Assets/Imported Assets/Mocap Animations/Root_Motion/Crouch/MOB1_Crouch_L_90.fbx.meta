@@ -472,7 +472,7 @@ ModelImporter:
       name: MotusMan_Phong1
     second: {fileID: 2100000, guid: 6eb380112487d4c40b7f63500e54ebd8, type: 2}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 0

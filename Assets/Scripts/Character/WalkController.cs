@@ -51,7 +51,7 @@ class WalkController : InputController.IMovementListener {
         var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
         if (hasMovement) {
-            this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude, this._movementDampSpeed, Time.deltaTime);
+            this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
         }
     }
 
