@@ -470,9 +470,9 @@ ModelImporter:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: MotusMan_Phong1
-    second: {fileID: 2100000, guid: 55ae54e8fc3fe4f91bcc7d189cf10221, type: 2}
+    second: {fileID: 2100000, guid: d80b45f00819144f68d7729add1e6600, type: 2}
   materials:
-    materialImportMode: 1
+    materialImportMode: 0
     materialName: 0
     materialSearch: 1
     materialLocation: 0

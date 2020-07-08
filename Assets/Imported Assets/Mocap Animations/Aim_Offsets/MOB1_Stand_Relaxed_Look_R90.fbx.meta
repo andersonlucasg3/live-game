@@ -465,12 +465,15 @@ ModelImporter:
   - first:
       137: 13700000
     second: MotusMan_v55
+  - first:
+      74: -3497501213510534274
+    second: MOB1_Jog_L_Jump
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: MotusMan_Phong1
-    second: {fileID: 2100000, guid: 0e97d9ec67d5b4de2a11a617a884dd74, type: 2}
+    second: {fileID: 2100000, guid: f5b1a21394b83473d8d6f2acc06b18c5, type: 2}
   materials:
     materialImportMode: 0
     materialName: 0
@@ -499,11 +502,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: MOB1_Stand_Relaxed_Look_R90
-      takeName: MOB1_Stand_Relaxed_Look_R90
+      name: MOB1_Jog_L_Jump
+      takeName: MOB1_Jog_L_Jump
       internalID: 0
       firstFrame: 0
-      lastFrame: 1
+      lastFrame: 36
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -550,7 +553,7 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     meshOptimizationFlags: -1
-    indexFormat: 1
+    indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
@@ -1408,12 +1411,11 @@ ModelImporter:
     hasTranslationDoF: 0
     hasExtraRoot: 1
     skeletonHasParents: 1
-  lastHumanDescriptionAvatarSource: {fileID: 9000000, guid: eadb4ba512015ea45a1b15fb9eec5ef1,
-    type: 3}
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
   autoGenerateAvatarMappingIfUnspecified: 1
   animationType: 3
   humanoidOversampling: 1
-  avatarSetup: 2
+  avatarSetup: 1
   additionalBone: 0
   userData: 
   assetBundleName: 

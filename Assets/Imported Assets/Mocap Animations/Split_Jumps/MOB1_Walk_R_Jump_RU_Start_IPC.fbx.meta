@@ -465,12 +465,15 @@ ModelImporter:
   - first:
       137: 13700000
     second: MotusMan_v55
+  - first:
+      74: -3497501213510534274
+    second: MOB1_Jog_L_Jump
   externalObjects:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
       name: MotusMan_Phong1
-    second: {fileID: 2100000, guid: 5047d2697d60e409cafb06c5259c1e48, type: 2}
+    second: {fileID: 2100000, guid: f5b1a21394b83473d8d6f2acc06b18c5, type: 2}
   materials:
     materialImportMode: 0
     materialName: 0
@@ -499,11 +502,11 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: MOB1_Walk_R_Jump_RU_Start_IPC
-      takeName: MOB1_Walk_R_Jump_RU_Start_IPC
+      name: MOB1_Jog_L_Jump
+      takeName: MOB1_Jog_L_Jump
       internalID: 0
       firstFrame: 0
-      lastFrame: 15
+      lastFrame: 36
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -550,7 +553,7 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     meshOptimizationFlags: -1
-    indexFormat: 1
+    indexFormat: 0
     secondaryUVAngleDistortion: 8
     secondaryUVAreaDistortion: 15.000001
     secondaryUVHardAngle: 88
