@@ -7,6 +7,9 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
     [SerializeField] private Vector3 _lookAtDisplacement = Vector3.zero;
     [SerializeField] private float _cameraMinRotation = 90F;
     [SerializeField] private float _cameraMaxRotation = 180F;
+#if UNITY_EDITOR
+    [SerializeField] private bool _showGizmos = true;
+#endif
 
     private Vector2 _rotation = Vector2.zero;
     private Vector3 _currentVelocity = Vector3.zero;
@@ -37,6 +40,7 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
 
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {
+        if (!this._showGizmos) { return; }
         if (this._target == null) { return; }
 
         var shoulderPosition = this.GetShoulderPosition();

@@ -1225,6 +1225,7 @@ MonoBehaviour:
   _lookAtDisplacement: {x: 0.8, y: 1.4, z: 0}
   _cameraMinRotation: -45
   _cameraMaxRotation: 45
+  _showGizmos: 0
 --- !u!20 &1687258584
 Camera:
   m_ObjectHideFlags: 0

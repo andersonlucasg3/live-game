@@ -109,4 +109,4 @@ Material:
     - _Color: {r: 1, g: 1, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SoftParticleFadeParams: {r: 0, g: 0, b: 0, a: 0}
-    - _SpecColor: {r: 0.19999972, g: 0.19999972, b: 0.19999972, a: 0.5}
+    - _SpecColor: {r: 0.19999969, g: 0.19999969, b: 0.19999969, a: 0.5}
