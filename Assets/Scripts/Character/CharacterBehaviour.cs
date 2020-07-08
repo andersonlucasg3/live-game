@@ -18,6 +18,8 @@ public class CharacterBehaviour : MonoBehaviour {
         this._input.AddListener(this._walk);
         this._input.AddListener(this._camera);
         this._input.Enable();
+
+        this._walk.Configure(this._input);
     }
 
     protected virtual void Update() {
