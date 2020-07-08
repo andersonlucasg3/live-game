@@ -44,7 +44,7 @@ class WalkController : InputController.IMovementListener {
         bool isMoving = this._movementVector.target != Vector2.zero;
         var isPivoting = this.IsPivoting();
         this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
+        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection());
 
         var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);

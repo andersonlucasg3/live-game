@@ -4,14 +4,14 @@
 public class CharacterBehaviour : MonoBehaviour {
     private Animator _animator = null;
     private InputController _input = null;
-    private CharacterController _characterController = null;
+    //private CharacterController _characterController = null;
     [SerializeField] private FootIKController _footIK = null;
     [SerializeField] private WalkController _walk = null;
     [SerializeField] private CameraBehaviour _camera = null;
 
     protected virtual void Awake() {
         this._animator = this.GetComponent<Animator>();
-        this._characterController = this.GetComponent<CharacterController>();
+        //this._characterController = this.GetComponent<CharacterController>();
         this._walk.Configure(this._animator, this._camera.transform);
         this._walk.isMovingSetter = this._footIK.SetIsMoving;
 
@@ -31,11 +31,10 @@ public class CharacterBehaviour : MonoBehaviour {
         this._footIK.Update();
     }
 
-    private void OnAnimatorMove() {
-        this._characterController.Move(this._animator.velocity * Time.deltaTime);
-        if (this._animator.deltaRotation == Quaternion.identity) { return; }
-        this.transform.rotation *= this._animator.deltaRotation;
-    }
+    //private void OnAnimatorMove() {
+    //    this._characterController.Move(this._animator.velocity * Time.deltaTime);
+    //    this.transform.rotation = this._animator.rootRotation;
+    //}
 
     protected virtual void OnAnimatorIK(int layerIndex) {
         this._footIK.OnAnimatorIK();
