@@ -46,12 +46,15 @@ class WalkController : InputController.IMovementListener {
         this.isMovingSetter(isMoving || isPivoting);
         this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
-        var hasMovement = this._movementVector.current.magnitude > 0F;
+        var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
         this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
 
-        if (hasMovement) { this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle()); }
-        else { this._animator.SetFloat(AnimationKeys.angleProperty, 0F); }
+        if (hasMovement) {
+            this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
+        } else {
+            this._animator.SetFloat(AnimationKeys.angleProperty, 0F);
+        }
     }
 
     private Vector3 GetDirectionFromCamera() {

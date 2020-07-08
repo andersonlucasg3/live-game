@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 struct AcceleratedValue {
     public float acceleration { get; set; }
@@ -9,27 +8,20 @@ struct AcceleratedValue {
     public static readonly AcceleratedValue zero = new AcceleratedValue();
 
     public void Update() {
-        this.Accelerate(Time.deltaTime);
+        this.current = Accelerate(Time.deltaTime, this.target, this.current, this.acceleration);
     }
 
-    public void Update(float deltaTime) {
-        this.Accelerate(deltaTime);
+    public void FixedUpdate() {
+        this.current = Accelerate(Time.fixedDeltaTime, this.target, this.current, this.acceleration);
     }
 
-    private void Accelerate(float deltaTime) {
-        var delta = this.target - this.current;
-        var step = this.acceleration * deltaTime;
+    internal static float Accelerate(float deltaTime, float target, float current, float acceleration) {
+        var delta = target - current;
+        var step = Mathf.Abs(delta) * acceleration * deltaTime;
+        if (target < current) { step = -step; }
 
-        this.current += delta * step;
-
-        this.current = ValidateAndFillComponent(desired: this.target, current: this.current, step);
-    }
-
-    internal static float ValidateAndFillComponent(float desired, float current, float step) {
-        if (desired > 0 && current >= desired) { return desired; }
-        if (desired < 0 && current <= desired) { return desired; }
-        if (desired == 0 && Mathf.Abs(current) < step) { return desired; }
-        return current;
+        if (Mathf.Abs(step) > Mathf.Abs(delta)) { return target; }
+        return current + step;
     }
 }
 
@@ -41,22 +33,17 @@ struct AcceleratedVector2 {
     public static readonly AcceleratedVector2 zero = new AcceleratedVector2();
 
     public void Update() {
-        this.Accelerate();
+        this.Accelerate(Time.deltaTime);
     }
 
-    private void Accelerate() {
+    public void FixedUpdate() {
+        this.Accelerate(Time.fixedDeltaTime);
+    }
+
+    private void Accelerate(float time) {
         var current = this.current;
-
-        var deltaY = this.target.y - current.y;
-        var deltaX = this.target.x - current.x;
-        var step = this.acceleration * Time.deltaTime;
-
-        current.y += deltaY * step;
-        current.x += deltaX * step;
-
-        current.y = AcceleratedValue.ValidateAndFillComponent(desired: this.target.y, current: current.y, step);
-        current.x = AcceleratedValue.ValidateAndFillComponent(desired: this.target.x, current: current.x, step);
-
+        current.x = AcceleratedValue.Accelerate(time, this.target.x, current.x, this.acceleration);
+        current.y = AcceleratedValue.Accelerate(time, this.target.y, current.y, this.acceleration);
         this.current = current;
     }
 }
@@ -69,25 +56,18 @@ struct AcceleratedVector3 {
     public static readonly AcceleratedVector3 zero = new AcceleratedVector3();
 
     public void Update() {
-        this.Accelerate();
+        this.Accelerate(Time.deltaTime);
     }
 
-    private void Accelerate() {
+    public void FixedUpdate() {
+        this.Accelerate(Time.fixedDeltaTime);
+    }
+
+    private void Accelerate(float time) {
         var current = this.current;
-
-        var deltaY = this.target.y - current.y;
-        var deltaX = this.target.x - current.x;
-        var deltaZ = this.target.z - current.z;
-        var step = this.acceleration * Time.deltaTime;
-
-        current.y += deltaY * step;
-        current.x += deltaX * step;
-        current.z += deltaZ * step;
-
-        current.y = AcceleratedValue.ValidateAndFillComponent(desired: this.target.y, current: current.y, step);
-        current.x = AcceleratedValue.ValidateAndFillComponent(desired: this.target.x, current: current.x, step);
-        current.z = AcceleratedValue.ValidateAndFillComponent(desired: this.target.z, current: current.z, step);
-
+        current.x = AcceleratedValue.Accelerate(time, this.target.x, current.x, this.acceleration);
+        current.y = AcceleratedValue.Accelerate(time, this.target.y, current.y, this.acceleration);
+        current.z = AcceleratedValue.Accelerate(time, this.target.z, current.z, this.acceleration);
         this.current = current;
     }
 }

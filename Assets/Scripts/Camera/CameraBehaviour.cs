@@ -12,15 +12,27 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
 #endif
 
     private Vector2 _rotation = Vector2.zero;
-    private Vector3 _currentVelocity = Vector3.zero;
+    private Vector3 _shoulderPosition = Vector3.zero;
+    private AcceleratedVector3 _shoulderDirection = AcceleratedVector3.zero;
+    private AcceleratedVector3 _position = AcceleratedVector3.zero;
+
+    protected virtual void Awake() {
+        this._position.acceleration = this._followSpeed;
+        this._shoulderDirection.acceleration = this._followSpeed * 2;
+    }
+
+    protected virtual void Update() {
+        this._shoulderPosition = this.GetShoulderPosition();
+        this._shoulderDirection.target = this._shoulderPosition - this.transform.position;
+        this._position.target = this.GetCameraPosition(this._shoulderPosition);
+
+        this._position.Update();
+        this._shoulderDirection.Update();
+    }
 
     protected virtual void LateUpdate() {
-        var step = this._followSpeed * Time.deltaTime;
-        var targetShoulderPosition = this.GetShoulderPosition();
-        var targetPosition = this.GetCameraPosition(targetShoulderPosition);
-
-        this.transform.position = Vector3.SmoothDamp(this.transform.position, targetPosition, ref this._currentVelocity, step);
-        this.transform.LookAt(targetShoulderPosition, Vector3.up);
+        this.transform.position = this._position.current;
+        this.transform.rotation = Quaternion.LookRotation(this._shoulderDirection.current);
     }
 
     private Vector3 GetShoulderPosition()
@@ -43,12 +55,13 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
         if (!this._showGizmos) { return; }
         if (this._target == null) { return; }
 
-        var shoulderPosition = this.GetShoulderPosition();
-        var cameraPosition = this.GetCameraPosition(shoulderPosition);
-        var cubeSize = Vector3.one * 0.25F;
+        var shoulderPosition = this._shoulderPosition;
+        var cameraPosition = this._position.target;
+        var cubeSize = Vector3.one * 0.1F;
 
+        Gizmos.color = Color.green;
         Gizmos.DrawCube(shoulderPosition, cubeSize);
-        Gizmos.DrawSphere(cameraPosition, 0.25F);
+        Gizmos.DrawSphere(cameraPosition, 0.1F);
     }
 #endif
 
