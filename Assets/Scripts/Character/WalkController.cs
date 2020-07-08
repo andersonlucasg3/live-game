@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
@@ -34,16 +35,21 @@ class WalkController : InputController.IMovementListener {
         this._playerDirectionVector.target = this.GetDirectionFromCamera();
 
         bool isMoving = this._movementVector.target != Vector2.zero;
-        this.isMovingSetter(isMoving);
+        var isPivoting = this.IsPivoting();
+        this.isMovingSetter(isMoving || isPivoting);
         this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude, this._movementDampSpeed, Time.deltaTime);
         this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
-        if (!this.IsPivoting()) {
+        if (!isPivoting) {
             this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
         }
     }
 
     private Vector3 GetDirectionFromCamera() {
+        if (this._movementVector.target == Vector2.zero) {
+            return this._camera.forward;
+        }
+
         var moveDirection = this._camera.rotation * this._movementVector.current.ToDirectionVector();
         moveDirection.y = 0F;
         return moveDirection;
@@ -65,8 +71,7 @@ class WalkController : InputController.IMovementListener {
     }
 
     private bool IsPivoting()
-        => this._stateInfo.fullPathHash == AnimationKeys.turnLeftTreeState ||
-            this._stateInfo.fullPathHash == AnimationKeys.turnRightTreeState;
+        => AnimationKeys.walkTurnStates.Contains(this._stateInfo.fullPathHash) && 1F - this._stateInfo.normalizedTime >= 0.1F;
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
@@ -90,7 +95,7 @@ class WalkController : InputController.IMovementListener {
     #region Inputs
 
     void InputController.IMovementListener.Move(Vector2 inputDirection) {
-        this._movementVector.target = inputDirection;
+        this._movementVector.target = Vector2.ClampMagnitude(inputDirection, 1);
     }
 
     #endregion
@@ -101,7 +106,16 @@ class WalkController : InputController.IMovementListener {
         public static readonly int angleProperty = Animator.StringToHash("angle");
 
         public static readonly int walkMovementTreeState = Animator.StringToHash("MovementLayer.Movement Tree");
-        public static readonly int turnRightTreeState = Animator.StringToHash("MovementLayer.Turn Right Tree");
-        public static readonly int turnLeftTreeState = Animator.StringToHash("MovementLayer.Turn Left Tree");
+        public static readonly int walkTurnLeft90State = Animator.StringToHash("MovementLayer.Walk Turn Left 90");
+        public static readonly int walkTurnLeft180State = Animator.StringToHash("MovementLayer.Walk Turn Left 180");
+        public static readonly int walkTurnRight90State = Animator.StringToHash("MovementLayer.Walk Turn Right 90");
+        public static readonly int walkTurnRight180State = Animator.StringToHash("MovementLayer.Walk Turn Right 180");
+
+        public static readonly int[] walkTurnStates = new int[] {
+            walkTurnLeft90State,
+            walkTurnLeft180State,
+            walkTurnRight90State,
+            walkTurnRight180State
+        };
     }
 }

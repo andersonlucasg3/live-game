@@ -502,8 +502,8 @@ ModelImporter:
       name: MOB1_Walk_R_90
       takeName: MOB1_Walk_R_90
       internalID: 0
-      firstFrame: 0
-      lastFrame: 76
+      firstFrame: 21
+      lastFrame: 56
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
