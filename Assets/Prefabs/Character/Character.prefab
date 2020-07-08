@@ -1641,6 +1641,7 @@ MonoBehaviour:
       m_Bits: 55
   _walk:
     _movementAcceleration: 6
+    _directionAcceleration: 2.5
     _movementDampSpeed: 0.1
   _camera: {fileID: 0}
 --- !u!1 &4884740183800642193
