@@ -1663,10 +1663,5 @@ PrefabInstance:
       propertyPath: _camera
       value: 
       objectReference: {fileID: 1687258583}
-    - target: {fileID: 8892979685089846693, guid: d398c0d9eba09401b82e576c90907de4,
-        type: 3}
-      propertyPath: _walk._directionAcceleration
-      value: 1
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d398c0d9eba09401b82e576c90907de4, type: 3}
