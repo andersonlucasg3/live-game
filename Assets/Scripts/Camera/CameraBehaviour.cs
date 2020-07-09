@@ -21,16 +21,14 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
         this._shoulderDirection.acceleration = this._followSpeed * 2;
     }
 
-    protected virtual void Update() {
+    protected virtual void LateUpdate() {
         this._shoulderPosition = this.GetShoulderPosition();
         this._shoulderDirection.target = this._shoulderPosition - this.transform.position;
         this._position.target = this.GetCameraPosition(this._shoulderPosition);
 
         this._position.Update();
         this._shoulderDirection.Update();
-    }
 
-    protected virtual void LateUpdate() {
         this.transform.position = this._position.current;
         this.transform.rotation = Quaternion.LookRotation(this._shoulderDirection.current);
     }

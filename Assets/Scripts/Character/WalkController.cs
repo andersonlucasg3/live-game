@@ -34,17 +34,17 @@ class WalkController : InputController.IMovementListener {
     }
 
     public void Update() {
+        this._playerDirectionVector.target = this.GetDirectionFromCamera();
+
         this._movementVector.Update();
         this._playerDirectionVector.Update();
 
         this._stateInfo = this._animator.GetCurrentAnimatorStateInfo(0);
 
-        this._playerDirectionVector.target = this.GetDirectionFromCamera();
-
         bool isMoving = this._movementVector.target != Vector2.zero;
         var isPivoting = this.IsPivoting();
         this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection());
+        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
 
         var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
@@ -79,7 +79,7 @@ class WalkController : InputController.IMovementListener {
     private float DistanceFromDirection() {
         var inputDirection = this._player.forward;
         var playerDirection = this._playerDirectionVector.current;
-        return Vector3.Cross(inputDirection, playerDirection).y * 2;
+        return Vector3.Cross(inputDirection, playerDirection).y * 2F;
     }
 
     private bool IsPivoting() {
