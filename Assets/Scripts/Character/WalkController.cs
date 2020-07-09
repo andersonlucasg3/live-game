@@ -33,18 +33,18 @@ class WalkController : InputController.IMovementListener {
         this._input = input;
     }
 
-    public void Update() {
+    public void FixedUpdate() {
         this._playerDirectionVector.target = this.GetDirectionFromCamera();
 
-        this._movementVector.Update();
-        this._playerDirectionVector.Update();
+        this._movementVector.FixedUpdate();
+        this._playerDirectionVector.FixedUpdate();
 
         this._stateInfo = this._animator.GetCurrentAnimatorStateInfo(0);
 
         bool isMoving = this._movementVector.target != Vector2.zero;
         var isPivoting = this.IsPivoting();
         this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.deltaTime);
+        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.fixedDeltaTime);
 
         var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);

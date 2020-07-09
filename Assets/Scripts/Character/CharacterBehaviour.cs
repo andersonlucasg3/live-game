@@ -4,14 +4,13 @@
 public class CharacterBehaviour : MonoBehaviour {
     private Animator _animator = null;
     private InputController _input = null;
-    //private CharacterController _characterController = null;
+
     [SerializeField] private FootIKController _footIK = null;
     [SerializeField] private WalkController _walk = null;
     [SerializeField] private CameraBehaviour _camera = null;
 
     protected virtual void Awake() {
         this._animator = this.GetComponent<Animator>();
-        //this._characterController = this.GetComponent<CharacterController>();
         this._walk.Configure(this._animator, this._camera.transform);
         this._walk.isMovingSetter = this._footIK.SetIsMoving;
 
@@ -26,15 +25,14 @@ public class CharacterBehaviour : MonoBehaviour {
         this._walk.Configure(this._input);
     }
 
-    protected virtual void Update() {
-        this._walk.Update();
-        this._footIK.Update();
+    protected virtual void FixedUpdate() {
+        this._walk.FixedUpdate();
+        this._camera.targetPosition = this.transform.position;
     }
 
-    //private void OnAnimatorMove() {
-    //    this._characterController.Move(this._animator.velocity * Time.deltaTime);
-    //    this.transform.rotation = this._animator.rootRotation;
-    //}
+    protected virtual void Update() {
+        this._footIK.Update();
+    }
 
     protected virtual void OnAnimatorIK(int layerIndex) {
         this._footIK.OnAnimatorIK();

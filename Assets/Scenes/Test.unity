@@ -493,12 +493,6 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 205522806}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
---- !u!4 &311905887 stripped
-Transform:
-  m_CorrespondingSourceObject: {fileID: 5207940158899438501, guid: d398c0d9eba09401b82e576c90907de4,
-    type: 3}
-  m_PrefabInstance: {fileID: 4329567538867424556}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &403997358
 GameObject:
   m_ObjectHideFlags: 0
@@ -1214,13 +1208,12 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1687258581}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 148f4a17bf8224dceafd1a59c52170a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _target: {fileID: 311905887}
-  _followSpeed: 10
+  _followSpeed: 20
   _positionDisplacement: {x: 0.9, y: 0.5, z: -2.22}
   _lookAtDisplacement: {x: 0.8, y: 1.4, z: 0}
   _cameraMinRotation: -45

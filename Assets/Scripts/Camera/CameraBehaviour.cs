@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
 public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
-    [SerializeField] private Transform _target = null;
     [SerializeField] private float _followSpeed = 10F;
     [SerializeField] private Vector3 _positionDisplacement = Vector3.zero;
     [SerializeField] private Vector3 _lookAtDisplacement = Vector3.zero;
@@ -13,28 +12,29 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
 
     private Vector2 _rotation = Vector2.zero;
     private Vector3 _shoulderPosition = Vector3.zero;
-    private AcceleratedVector3 _shoulderDirection = AcceleratedVector3.zero;
-    private AcceleratedVector3 _position = AcceleratedVector3.zero;
+    private AcceleratedVector3 _cameraPosition = AcceleratedVector3.zero;
+    private AcceleratedVector3 _targetPosition = AcceleratedVector3.zero;
+
+    public Vector3 targetPosition { set => this._targetPosition.target = value; }
 
     protected virtual void Awake() {
-        this._position.acceleration = this._followSpeed;
-        this._shoulderDirection.acceleration = this._followSpeed * 2;
+        this._cameraPosition.acceleration = this._followSpeed;
+        this._targetPosition.acceleration = this._followSpeed;
     }
 
-    protected virtual void LateUpdate() {
+    protected virtual void FixedUpdate() {
         this._shoulderPosition = this.GetShoulderPosition();
-        this._shoulderDirection.target = this._shoulderPosition - this.transform.position;
-        this._position.target = this.GetCameraPosition(this._shoulderPosition);
+        this._cameraPosition.target = this.GetCameraPosition(this._shoulderPosition);
 
-        this._position.Update();
-        this._shoulderDirection.Update();
+        this._cameraPosition.FixedUpdate();
+        this._targetPosition.FixedUpdate();
 
-        this.transform.position = this._position.current;
-        this.transform.rotation = Quaternion.LookRotation(this._shoulderDirection.current);
+        this.transform.position = this._cameraPosition.current;
+        this.transform.rotation = Quaternion.LookRotation(this._shoulderPosition - this.transform.position);
     }
 
     private Vector3 GetShoulderPosition()
-        => this._target.position + this.GetRotation(onlyY: true) * this._lookAtDisplacement;
+        => this._targetPosition.current + this.GetRotation(onlyY: true) * this._lookAtDisplacement;
 
     private Vector3 GetCameraPosition(Vector3 shoulderPosition)
         => shoulderPosition + this.GetRotation() * this._positionDisplacement;
@@ -51,15 +51,13 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {
         if (!this._showGizmos) { return; }
-        if (this._target == null) { return; }
 
-        var shoulderPosition = this._shoulderPosition;
-        var cameraPosition = this._position.target;
         var cubeSize = Vector3.one * 0.1F;
 
         Gizmos.color = Color.green;
-        Gizmos.DrawCube(shoulderPosition, cubeSize);
-        Gizmos.DrawSphere(cameraPosition, 0.1F);
+        Gizmos.DrawCube(this._shoulderPosition, cubeSize);
+        Gizmos.DrawSphere(this._cameraPosition.target, 0.1F);
+        Gizmos.DrawCube(this._targetPosition.target, cubeSize);
     }
 #endif
 
