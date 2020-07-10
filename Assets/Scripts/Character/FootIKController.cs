@@ -13,11 +13,13 @@ public class FootIKController {
     private AcceleratedValue _leftFootWeight = AcceleratedValue.zero;
     private AcceleratedValue _rightFootWeight = AcceleratedValue.zero;
     private bool _isMoving;
+    private bool _inStairs;
 
     [SerializeField] private float _footRaycastDistance = 1F;
     [SerializeField] private float _footCorrectionAcceleration = 5F;
     [SerializeField] private float _footHeightCorrection = 0.1F;
-    [SerializeField] private LayerMask _footIgnoreCollisionLayerMask = 0;
+    [SerializeField] private float _footMinDistanceToIK = 0.1F;
+    [SerializeField] private LayerMask _raycastLayerMask = 0;
 
     public bool isEnabled { get; set; } = true;
 
@@ -33,14 +35,14 @@ public class FootIKController {
     public void Update() {
         if (!this.isEnabled) { return; }
 
-        if (!this._isMoving) {
+        if (!this._isMoving || this._inStairs) {
             this._leftFootWeight.target = 1;
             this._leftFootInfo = this.CalculateFootTargetPosition(this._leftFootIKPosition);
         } else {
             this._leftFootWeight.target = 0;
         }
 
-        if (!this._isMoving) {
+        if (!this._isMoving || this._inStairs) {
             this._rightFootWeight.target = 1;
             this._rightFootInfo = this.CalculateFootTargetPosition(this._rightFootIKPosition);
         } else {
@@ -58,15 +60,17 @@ public class FootIKController {
         this._leftFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.LeftFoot);
 
         if (this._leftFootInfo.HasValue) {
-            this.DoFootIK(AvatarIKGoal.LeftFoot, this._leftFootInfo.Value, this._leftFootWeight, this._leftFoot);
+            this.DoFootIK(AvatarIKGoal.LeftFoot, this._leftFootInfo.Value, this._leftFootWeight, this._leftFoot, this._leftFootIKPosition);
         }
 
         if (this._rightFootInfo.HasValue) {
-            this.DoFootIK(AvatarIKGoal.RightFoot, this._rightFootInfo.Value, this._rightFootWeight, this._rightFoot);
+            this.DoFootIK(AvatarIKGoal.RightFoot, this._rightFootInfo.Value, this._rightFootWeight, this._rightFoot, this._rightFootIKPosition);
         }
     }
 
-    private void DoFootIK(AvatarIKGoal goal, FootHitInfo info, AcceleratedValue weight, Transform foot) {
+    private void DoFootIK(AvatarIKGoal goal, FootHitInfo info, AcceleratedValue weight, Transform foot, Vector3 footIKPosition) {
+        if (this._isMoving && Vector3.Distance(info.point, footIKPosition) > this._footMinDistanceToIK) { return; }
+
         this._animator.SetIKPosition(goal, info.point);
         this._animator.SetIKPositionWeight(goal, weight.current);
 
@@ -75,6 +79,7 @@ public class FootIKController {
     }
 
     public void SetIsMoving(bool isMoving) => this._isMoving = isMoving;
+    public void SetInStairs(bool inStairs) => this._inStairs = inStairs;
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
@@ -113,7 +118,7 @@ public class FootIKController {
 
     private FootHitInfo? CalculateFootTargetPosition(Vector3 position) {
         var ray = this.CreateFootRay(position);
-        if (!Physics.Raycast(ray, out RaycastHit hit, this._footRaycastDistance, this._footIgnoreCollisionLayerMask)) { return null; }
+        if (!Physics.Raycast(ray, out RaycastHit hit, this._footRaycastDistance, this._raycastLayerMask)) { return null; }
         return FootHitInfo.zero.Set(hit.point + Vector3.up * this._footHeightCorrection, hit.normal);
     }
 

@@ -4,9 +4,10 @@
 public class CharacterBehaviour : MonoBehaviour {
     private InputController _input = null;
 
+    [SerializeField] private CameraBehaviour _camera = null;
     [SerializeField] private FootIKController _footIK = null;
     [SerializeField] private MovementController _movement = null;
-    [SerializeField] private CameraBehaviour _camera = null;
+    [SerializeField] private ElevationController _elevation = null;
 
     protected virtual void Awake() {
         var animator = this.GetComponent<Animator>();
@@ -23,15 +24,19 @@ public class CharacterBehaviour : MonoBehaviour {
         this._input.Enable();
 
         this._movement.Configure(this._input);
+        this._elevation.Configure(animator, charController);
+        this._elevation.inStairsSetter = this._footIK.SetInStairs;
     }
 
     protected virtual void FixedUpdate() {
         this._movement.FixedUpdate();
+        this._elevation.FixedUpdate();
     }
 
     protected virtual void Update() {
         this._movement.Update();
         this._footIK.Update();
+        this._elevation.Update();
     }
 
     protected virtual void OnAnimatorMove() => this._movement.OnAnimatorMove();
@@ -41,6 +46,7 @@ public class CharacterBehaviour : MonoBehaviour {
     protected virtual void OnDrawGizmos() {
         this._footIK.OnDrawGizmos();
         this._movement.OnDrawGizmos();
+        this._elevation.OnDrawGizmos();
     }
 #endif
 }

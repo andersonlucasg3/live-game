@@ -148,9 +148,9 @@ class MovementController : InputController.IMovementListener {
     private struct AnimationKeys {
         public static readonly int speedProperty = Animator.StringToHash("speed");
         public static readonly int directionXProperty = Animator.StringToHash("directionX");
-        public static readonly int directionYProperty = Animator.StringToHash("directionY");
         public static readonly int angleProperty = Animator.StringToHash("angle");
         public static readonly int hasMovementProperty = Animator.StringToHash("hasMovement");
+        
 
         public static readonly int idleTurnLeft45State = Animator.StringToHash("MovementLayer.Idle Turn Left 45");
         public static readonly int idleTurnLeft90State = Animator.StringToHash("MovementLayer.Idle Turn Left 90");
