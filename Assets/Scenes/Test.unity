@@ -14,7 +14,7 @@ OcclusionCullingSettings:
 RenderSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 9
-  m_Fog: 0
+  m_Fog: 1
   m_FogColor: {r: 0.65080994, g: 0.666729, b: 0.7075472, a: 1}
   m_FogMode: 3
   m_FogDensity: 0.05
@@ -862,6 +862,12 @@ Transform:
   m_Father: {fileID: 1446628728}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!4 &1417526858 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5207940158899438501, guid: d398c0d9eba09401b82e576c90907de4,
+    type: 3}
+  m_PrefabInstance: {fileID: 4329567538867424556}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1446628727
 GameObject:
   m_ObjectHideFlags: 0
@@ -1213,6 +1219,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 148f4a17bf8224dceafd1a59c52170a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _targetTransform: {fileID: 1417526858}
   _followSpeed: 20
   _positionDisplacement: {x: 0.9, y: 0.5, z: -2.22}
   _lookAtDisplacement: {x: 0.8, y: 1.4, z: 0}

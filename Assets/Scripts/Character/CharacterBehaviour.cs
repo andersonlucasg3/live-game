@@ -2,7 +2,6 @@
 
 [RequireComponent(typeof(CharacterController))]
 public class CharacterBehaviour : MonoBehaviour {
-    private Animator _animator = null;
     private InputController _input = null;
 
     [SerializeField] private FootIKController _footIK = null;
@@ -10,11 +9,12 @@ public class CharacterBehaviour : MonoBehaviour {
     [SerializeField] private CameraBehaviour _camera = null;
 
     protected virtual void Awake() {
-        this._animator = this.GetComponent<Animator>();
-        this._walk.Configure(this._animator, this._camera.transform);
+        var animator = this.GetComponent<Animator>();
+        var charController = this.GetComponent<CharacterController>();
+        this._walk.Configure(animator, this._camera, charController);
         this._walk.isMovingSetter = this._footIK.SetIsMoving;
 
-        this._footIK.Configure(this._animator);
+        this._footIK.Configure(animator);
         this._footIK.isEnabled = true;
 
         this._input = new InputController();
@@ -27,16 +27,15 @@ public class CharacterBehaviour : MonoBehaviour {
 
     protected virtual void FixedUpdate() {
         this._walk.FixedUpdate();
-        this._camera.targetPosition = this.transform.position;
     }
 
     protected virtual void Update() {
+        this._walk.Update();
         this._footIK.Update();
     }
 
-    protected virtual void OnAnimatorIK(int layerIndex) {
-        this._footIK.OnAnimatorIK();
-    }
+    protected virtual void OnAnimatorMove() => this._walk.OnAnimatorMove();
+    protected virtual void OnAnimatorIK(int layerIndex) => this._footIK.OnAnimatorIK();
 
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {

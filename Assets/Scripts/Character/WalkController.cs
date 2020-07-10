@@ -5,8 +5,8 @@ using UnityEngine;
 
 [Serializable]
 class WalkController : InputController.IMovementListener {
-    private Transform _player;
-    private Transform _camera;
+    private CharacterController _player;
+    private CameraBehaviour _camera;
     private Animator _animator;
     private InputController _input;
     private AcceleratedVector2 _movementVector;
@@ -14,15 +14,18 @@ class WalkController : InputController.IMovementListener {
     private AnimatorStateInfo _stateInfo;
     private float _speedMultiplier = 1F;
 
+    private float _distanceFromDirection = 0F;
+    private float _currentAngle = 0F;
+
     [SerializeField] private float _movementAcceleration = 5F;
     [SerializeField] private float _directionAcceleration = 2.5F;
     [SerializeField] private float _movementDampSpeed = 0.05F;
 
     public Action<bool> isMovingSetter { private get; set; }
 
-    public void Configure(Animator animator, Transform camera) {
+    public void Configure(Animator animator, CameraBehaviour camera, CharacterController player) {
         this._animator = animator;
-        this._player = animator.transform;
+        this._player = player;
         this._camera = camera;
 
         this._movementVector.acceleration = this._movementAcceleration;
@@ -35,41 +38,50 @@ class WalkController : InputController.IMovementListener {
 
     public void FixedUpdate() {
         this._playerDirectionVector.target = this.GetDirectionFromCamera();
+        this._distanceFromDirection = this.DistanceFromDirection();
+        this._currentAngle = this.CalculateAngle();
 
         this._movementVector.FixedUpdate();
         this._playerDirectionVector.FixedUpdate();
+    }
 
+    public void Update() {
         this._stateInfo = this._animator.GetCurrentAnimatorStateInfo(0);
 
         bool isMoving = this._movementVector.target != Vector2.zero;
         var isPivoting = this.IsPivoting();
         this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this.DistanceFromDirection(), this._movementDampSpeed, Time.fixedDeltaTime);
+        this._animator.SetFloat(AnimationKeys.directionProperty, this._distanceFromDirection, this._movementDampSpeed, Time.deltaTime);
 
         var hasMovement = this._movementVector.target.magnitude > 0F;
         this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
         this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
 
         if (hasMovement) {
-            this._animator.SetFloat(AnimationKeys.angleProperty, this.CalculateAngle());
+            this._animator.SetFloat(AnimationKeys.angleProperty, this._currentAngle);
         } else {
             this._animator.SetFloat(AnimationKeys.angleProperty, 0F);
         }
     }
 
-    private Vector3 GetDirectionFromCamera() {
-        if (this._movementVector.target == Vector2.zero) {
-            return this._camera.forward;
-        }
+    public void OnAnimatorMove() {
+        this._player.Move(this._animator.deltaPosition);
+        var direction = this._player.transform.forward + this._player.transform.right * this._distanceFromDirection * 0.1F;
+        this._player.transform.forward = this._animator.deltaRotation * direction;
 
-        var moveDirection = this._camera.rotation * this._movementVector.current.ToDirectionVector();
+        this._camera.targetPosition = this._player.transform.position;
+    }
+
+    private Vector3 GetDirectionFromCamera() {
+        if (this._movementVector.target == Vector2.zero) { return this._camera.transform.forward; }
+        var moveDirection = this._camera.transform.rotation * this._movementVector.current.ToDirectionVector();
         moveDirection.y = 0F;
         return moveDirection;
     }
 
     private float CalculateAngle() {
         var cameraDirection = this._playerDirectionVector.target;
-        var playerDirection = this._player.forward;
+        var playerDirection = this._player.transform.forward;
         var angle = Vector3.Angle(cameraDirection, playerDirection);
         var cross = Vector3.Cross(cameraDirection, playerDirection);
         if (cross.y > 0) { angle *= -1; }
@@ -77,7 +89,7 @@ class WalkController : InputController.IMovementListener {
     }
 
     private float DistanceFromDirection() {
-        var inputDirection = this._player.forward;
+        var inputDirection = this._player.transform.forward;
         var playerDirection = this._playerDirectionVector.current;
         return Vector3.Cross(inputDirection, playerDirection).y * 2F;
     }
@@ -88,22 +100,21 @@ class WalkController : InputController.IMovementListener {
             1F - this._stateInfo.normalizedTime >= 0.1F;
     }
 
-    private void UpdateMovementVector(Vector2 direction) {
-        this._movementVector.target = Vector2.ClampMagnitude(direction, 1) * this._speedMultiplier;
-    }
+    private void UpdateMovementVector(Vector2 direction)
+        => this._movementVector.target = Vector2.ClampMagnitude(direction, 1) * this._speedMultiplier;
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
         if (!EditorApplication.isPlaying) { return; }
 
-        var ray = new Ray(this._player.position + Vector3.up, Vector3.zero);
+        var ray = new Ray(this._player.transform.position + Vector3.up, Vector3.zero);
 
         void DrawLine(Color color) {
             Gizmos.color = color;
             Gizmos.DrawLine(ray.origin, ray.GetPoint(2F));
         }
 
-        ray.direction = this._player.forward;
+        ray.direction = this._player.transform.forward;
         DrawLine(Color.blue);
 
         ray.direction = this._playerDirectionVector.target;
