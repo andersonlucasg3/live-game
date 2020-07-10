@@ -4,22 +4,22 @@ using UnityEditor;
 using UnityEngine;
 
 [Serializable]
-class WalkController : InputController.IMovementListener {
+class MovementController : InputController.IMovementListener {
     private CharacterController _player;
     private CameraBehaviour _camera;
     private Animator _animator;
     private InputController _input;
     private AcceleratedVector2 _movementVector;
     private AcceleratedVector3 _playerDirectionVector;
-    private AnimatorStateInfo _stateInfo;
     private float _speedMultiplier = 1F;
 
+    private bool _hasMovement = false;
+    private bool _isPivoting = false;
     private float _distanceFromDirection = 0F;
     private float _currentAngle = 0F;
 
     [SerializeField] private float _movementAcceleration = 5F;
     [SerializeField] private float _directionAcceleration = 2.5F;
-    [SerializeField] private float _movementDampSpeed = 0.05F;
 
     public Action<bool> isMovingSetter { private get; set; }
 
@@ -37,36 +37,45 @@ class WalkController : InputController.IMovementListener {
     }
 
     public void FixedUpdate() {
+        this._hasMovement = this._movementVector.target.magnitude > 0F;
+        this._isPivoting = this.IsPivoting(this._animator.GetCurrentAnimatorStateInfo(0));
+
         this._playerDirectionVector.target = this.GetDirectionFromCamera();
-        this._distanceFromDirection = this.DistanceFromDirection();
         this._currentAngle = this.CalculateAngle();
+
+        if (this._isPivoting) {
+            this._distanceFromDirection = 0F;
+        } else {
+            this._distanceFromDirection = this.DistanceFromDirection();
+        }
 
         this._movementVector.FixedUpdate();
         this._playerDirectionVector.FixedUpdate();
+
+        if (!this._player.isGrounded) {
+            this._player.Move(Vector3.down * -Physics.gravity.y * Time.fixedDeltaTime);
+        }
     }
 
     public void Update() {
-        this._stateInfo = this._animator.GetCurrentAnimatorStateInfo(0);
-
         bool isMoving = this._movementVector.target != Vector2.zero;
-        var isPivoting = this.IsPivoting();
-        this.isMovingSetter(isMoving || isPivoting);
-        this._animator.SetFloat(AnimationKeys.directionProperty, this._distanceFromDirection, this._movementDampSpeed, Time.deltaTime);
-
-        var hasMovement = this._movementVector.target.magnitude > 0F;
-        this._animator.SetBool(AnimationKeys.hasMovementProperty, hasMovement);
+        this.isMovingSetter(isMoving || this._isPivoting);
+        this._animator.SetBool(AnimationKeys.hasMovementProperty, this._hasMovement);
         this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
 
-        if (hasMovement) {
+        if (this._hasMovement) {
             this._animator.SetFloat(AnimationKeys.angleProperty, this._currentAngle);
+            this._animator.SetFloat(AnimationKeys.directionXProperty, this._distanceFromDirection);
         } else {
             this._animator.SetFloat(AnimationKeys.angleProperty, 0F);
+            this._animator.SetFloat(AnimationKeys.directionXProperty, 0F);
         }
     }
 
     public void OnAnimatorMove() {
         this._player.Move(this._animator.deltaPosition);
-        var direction = this._player.transform.forward + this._player.transform.right * this._distanceFromDirection * 0.1F;
+        var direction = this._player.transform.forward;
+        if (this._animator.velocity.magnitude > 0.5F) { direction += this._player.transform.right * this._distanceFromDirection * 0.05F; }
         this._player.transform.forward = this._animator.deltaRotation * direction;
 
         this._camera.targetPosition = this._player.transform.position;
@@ -94,10 +103,11 @@ class WalkController : InputController.IMovementListener {
         return Vector3.Cross(inputDirection, playerDirection).y * 2F;
     }
 
-    private bool IsPivoting() {
-        return (AnimationKeys.walkTurnStates.Contains(this._stateInfo.fullPathHash) ||
-            AnimationKeys.idleTurnStates.Contains(this._stateInfo.fullPathHash)) &&
-            1F - this._stateInfo.normalizedTime >= 0.1F;
+    private bool IsPivoting(AnimatorStateInfo stateInfo) {
+        return (AnimationKeys.walkTurnStates.Contains(stateInfo.fullPathHash) ||
+            AnimationKeys.idleTurnStates.Contains(stateInfo.fullPathHash) ||
+            AnimationKeys.runTurnStates.Contains(stateInfo.fullPathHash)) &&
+            1F - stateInfo.normalizedTime >= 0.1F;
     }
 
     private void UpdateMovementVector(Vector2 direction)
@@ -137,7 +147,8 @@ class WalkController : InputController.IMovementListener {
 
     private struct AnimationKeys {
         public static readonly int speedProperty = Animator.StringToHash("speed");
-        public static readonly int directionProperty = Animator.StringToHash("direction");
+        public static readonly int directionXProperty = Animator.StringToHash("directionX");
+        public static readonly int directionYProperty = Animator.StringToHash("directionY");
         public static readonly int angleProperty = Animator.StringToHash("angle");
         public static readonly int hasMovementProperty = Animator.StringToHash("hasMovement");
 
@@ -153,6 +164,9 @@ class WalkController : InputController.IMovementListener {
         public static readonly int walkTurnRight90State = Animator.StringToHash("MovementLayer.Walk Turn Right 90");
         public static readonly int walkTurnRight180State = Animator.StringToHash("MovementLayer.Walk Turn Right 180");
 
+        public static readonly int runTurnLeft180State = Animator.StringToHash("MovementLayer.Run Turn Left 180");
+        public static readonly int runTurnRight180State = Animator.StringToHash("MovementLayer.Run Turn Right 180");
+
         public static readonly int[] idleTurnStates = new int[] {
             idleTurnLeft45State,
             idleTurnLeft90State,
@@ -167,6 +181,11 @@ class WalkController : InputController.IMovementListener {
             walkTurnLeft180State,
             walkTurnRight90State,
             walkTurnRight180State
+        };
+
+        public static readonly int[] runTurnStates = new int[] {
+            runTurnLeft180State,
+            runTurnRight180State
         };
     }
 }
