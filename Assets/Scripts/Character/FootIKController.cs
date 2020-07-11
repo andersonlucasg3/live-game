@@ -4,93 +4,89 @@ using UnityEngine;
 [Serializable]
 public class FootIKController {
     private Animator _animator;
+
+    private Transform _leftToes;
     private Transform _leftFoot;
+    private Transform _rightToes;
     private Transform _rightFoot;
+
     private Vector3 _leftFootIKPosition = Vector3.zero;
     private Vector3 _rightFootIKPosition = Vector3.zero;
+
     private FootHitInfo? _leftFootInfo = null;
     private FootHitInfo? _rightFootInfo = null;
+
     private AcceleratedValue _leftFootWeight = AcceleratedValue.zero;
     private AcceleratedValue _rightFootWeight = AcceleratedValue.zero;
-    private bool _isMoving;
-    private bool _inStairs;
-
-    [SerializeField] private float _footRaycastDistance = 1F;
-    [SerializeField] private float _footCorrectionAcceleration = 5F;
+    
+    [SerializeField] private float _footRaycastMaxDistance = 1F;
     [SerializeField] private float _footHeightCorrection = 0.1F;
-    [SerializeField] private float _footMinDistanceToIK = 0.1F;
+    [SerializeField] private float _footCorrectionAcceleration = 5F;
     [SerializeField] private LayerMask _raycastLayerMask = 0;
+    [SerializeField] private Vector3 _footRaycastDisplacement = Vector3.zero;
+#if UNITY_EDITOR
+    [SerializeField] private bool _drawGizmos = true;
+#endif
 
     public bool isEnabled { get; set; } = true;
 
     public void Configure(Animator animator) {
         this._animator = animator;
+        this._leftToes = animator.GetBoneTransform(HumanBodyBones.LeftToes);
         this._leftFoot = animator.GetBoneTransform(HumanBodyBones.LeftFoot);
+        this._rightToes = animator.GetBoneTransform(HumanBodyBones.RightToes);
         this._rightFoot = animator.GetBoneTransform(HumanBodyBones.RightFoot);
 
         this._leftFootWeight.acceleration = this._footCorrectionAcceleration;
         this._rightFootWeight.acceleration = this._footCorrectionAcceleration;
     }
 
-    public void Update() {
+    public void FixedUpdate() {
         if (!this.isEnabled) { return; }
 
-        if (!this._isMoving || this._inStairs) {
-            this._leftFootWeight.target = 1;
-            this._leftFootInfo = this.CalculateFootTargetPosition(this._leftFootIKPosition);
-        } else {
-            this._leftFootWeight.target = 0;
-        }
+        this._leftFootInfo = this.CalculateFootTargetPosition(this._leftFootIKPosition, this._animator.transform.rotation, Vector3.down);
+        this._rightFootInfo = this.CalculateFootTargetPosition(this._rightFootIKPosition, this._animator.transform.rotation, Vector3.down);
+        if (this._leftFootInfo.HasValue) { this._leftFootWeight.target = 1F; } else { this._leftFootWeight.target = 0F; }
+        if (this._rightFootInfo.HasValue) { this._rightFootWeight.target = 1F; } else { this._rightFootWeight.target = 0F; }
 
-        if (!this._isMoving || this._inStairs) {
-            this._rightFootWeight.target = 1;
-            this._rightFootInfo = this.CalculateFootTargetPosition(this._rightFootIKPosition);
-        } else {
-            this._rightFootWeight.target = 0;
-        }
+        this._leftFootWeight.FixedUpdate();
+        this._rightFootWeight.FixedUpdate();
+    }
 
-        this._leftFootWeight.Update();
-        this._rightFootWeight.Update();
+    public void Update() {
+        if (!this.isEnabled) { return; }
     }
 
     public void OnAnimatorIK() {
         if (!this.isEnabled) { return; }
 
-        this._rightFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.RightFoot);
         this._leftFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.LeftFoot);
+        this._rightFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.RightFoot);
 
-        if (this._leftFootInfo.HasValue) {
-            this.DoFootIK(AvatarIKGoal.LeftFoot, this._leftFootInfo.Value, this._leftFootWeight, this._leftFoot, this._leftFootIKPosition);
-        }
-
-        if (this._rightFootInfo.HasValue) {
-            this.DoFootIK(AvatarIKGoal.RightFoot, this._rightFootInfo.Value, this._rightFootWeight, this._rightFoot, this._rightFootIKPosition);
-        }
+        this.DoFootIK(AvatarIKGoal.LeftFoot, this._leftFootInfo, this._leftFootWeight, this._leftFoot);
+        this.DoFootIK(AvatarIKGoal.RightFoot, this._rightFootInfo, this._rightFootWeight, this._rightFoot);
     }
 
-    private void DoFootIK(AvatarIKGoal goal, FootHitInfo info, AcceleratedValue weight, Transform foot, Vector3 footIKPosition) {
-        if (this._isMoving && Vector3.Distance(info.point, footIKPosition) > this._footMinDistanceToIK) { return; }
+    private void DoFootIK(AvatarIKGoal goal, FootHitInfo? info, AcceleratedValue weight, Transform foot) {
+        if (!info.HasValue) { return; }
 
-        this._animator.SetIKPosition(goal, info.point);
+        this._animator.SetIKPosition(goal, info.Value.point);
         this._animator.SetIKPositionWeight(goal, weight.current);
 
-        this._animator.SetIKRotation(goal, this.RotatedFoot(info.normal, foot));
+        this._animator.SetIKRotation(goal, this.RotatedFoot(info.Value.normal, foot));
         this._animator.SetIKRotationWeight(goal, weight.current);
     }
-
-    public void SetIsMoving(bool isMoving) => this._isMoving = isMoving;
-    public void SetInStairs(bool inStairs) => this._inStairs = inStairs;
 
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
         if (!this.isEnabled) { return; }
+        if (!this._drawGizmos) { return; }
         if (this._leftFoot == null || this._rightFoot == null) { return; }
-        if (this._leftFootInfo == null || this._rightFootInfo == null) { return; }
 
-        var leftFootRay = this.CreateFootRay(this._leftFoot.position);
-        var rightFootRay = this.CreateFootRay(this._rightFoot.position);
-        Gizmos.DrawLine(leftFootRay.origin, leftFootRay.GetPoint(this._footRaycastDistance));
-        Gizmos.DrawLine(rightFootRay.origin, rightFootRay.GetPoint(this._footRaycastDistance));
+        var leftFootRay = this.CreateFootRay(this._leftFootIKPosition, this._animator.transform.rotation, Vector3.down);
+        var rightFootRay = this.CreateFootRay(this._rightFootIKPosition, this._animator.transform.rotation, Vector3.down);
+        Gizmos.DrawLine(leftFootRay.origin, leftFootRay.GetPoint(this._footRaycastMaxDistance));
+        Gizmos.DrawLine(rightFootRay.origin, rightFootRay.GetPoint(this._footRaycastMaxDistance));
 
         void DrawSpheres(Vector3 rPos, Vector3 lPos, Color color, float radius = 0.05F) {
             Gizmos.color = color;
@@ -104,9 +100,11 @@ public class FootIKController {
         }
 
         DrawSpheres(this._rightFootIKPosition, this._leftFootIKPosition, Color.yellow, 0.04F);
-        DrawSpheres(this._rightFootInfo.Value.point, this._leftFootInfo.Value.point, Color.blue, 0.03F);
         DrawSpheres(this._rightFoot.position, this._leftFoot.position, Color.red, 0.02F);
 
+        if (this._leftFootInfo == null || this._rightFootInfo == null) { return; }
+
+        DrawSpheres(this._rightFootInfo.Value.point, this._leftFootInfo.Value.point, Color.blue, 0.03F);
         DrawLine(this._rightFootInfo.Value.point, this._rightFootInfo.Value.normal, Color.green, 0.25F);
     }
 #endif
@@ -116,14 +114,17 @@ public class FootIKController {
         return Quaternion.LookRotation(slopeCorrected, normal);
     }
 
-    private FootHitInfo? CalculateFootTargetPosition(Vector3 position) {
-        var ray = this.CreateFootRay(position);
-        if (!Physics.Raycast(ray, out RaycastHit hit, this._footRaycastDistance, this._raycastLayerMask)) { return null; }
-        return FootHitInfo.zero.Set(hit.point + Vector3.up * this._footHeightCorrection, hit.normal);
+    private FootHitInfo? CalculateFootTargetPosition(Vector3 position, Quaternion rotation, Vector3 direction) {
+        var ray = this.CreateFootRay(position, rotation, direction);
+        if (!Physics.Raycast(ray, out RaycastHit hit, this._footRaycastMaxDistance, this._raycastLayerMask)) { return null; }
+        return new FootHitInfo {
+            point = hit.point + Vector3.up * this._footHeightCorrection,
+            normal = hit.normal
+        };
     }
 
-    private Ray CreateFootRay(Vector3 pos) {
-        return new Ray(pos + Vector3.up * 0.5F, Vector3.down);
+    private Ray CreateFootRay(Vector3 pos, Quaternion rotation, Vector3 direction) {
+        return new Ray(pos + rotation * this._footRaycastDisplacement, direction);
     }
 
     struct FootHitInfo {

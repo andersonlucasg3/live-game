@@ -20,8 +20,9 @@ class MovementController : InputController.IMovementListener {
 
     [SerializeField] private float _movementAcceleration = 5F;
     [SerializeField] private float _directionAcceleration = 2.5F;
-
-    public Action<bool> isMovingSetter { private get; set; }
+#if UNITY_EDITOR
+    [SerializeField] private bool _drawGizmos = true;
+#endif
 
     public void Configure(Animator animator, CameraBehaviour camera, CharacterController player) {
         this._animator = animator;
@@ -58,8 +59,6 @@ class MovementController : InputController.IMovementListener {
     }
 
     public void Update() {
-        bool isMoving = this._movementVector.target != Vector2.zero;
-        this.isMovingSetter(isMoving || this._isPivoting);
         this._animator.SetBool(AnimationKeys.hasMovementProperty, this._hasMovement);
         this._animator.SetFloat(AnimationKeys.speedProperty, this._movementVector.current.magnitude);
 
@@ -73,7 +72,9 @@ class MovementController : InputController.IMovementListener {
     }
 
     public void OnAnimatorMove() {
-        this._player.Move(this._animator.deltaPosition);
+        var deltaPosition = this._animator.deltaPosition;
+        deltaPosition.y = 0;
+        this._player.Move(deltaPosition);
         var direction = this._player.transform.forward;
         if (this._animator.velocity.magnitude > 0.5F) { direction += this._player.transform.right * this._distanceFromDirection * 0.05F; }
         this._player.transform.forward = this._animator.deltaRotation * direction;
@@ -116,6 +117,7 @@ class MovementController : InputController.IMovementListener {
 #if UNITY_EDITOR
     public void OnDrawGizmos() {
         if (!EditorApplication.isPlaying) { return; }
+        if (!this._drawGizmos) { return; }
 
         var ray = new Ray(this._player.transform.position + Vector3.up, Vector3.zero);
 

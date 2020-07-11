@@ -26,8 +26,6 @@ public class ElevationController {
     [SerializeField] private bool _drawGizmos = true;
 #endif
 
-    public Action<bool> inStairsSetter { get; set; }
-
     public void Configure(Animator animator, CharacterController player) {
         this._animator = animator;
         this._player = player;
@@ -47,7 +45,7 @@ public class ElevationController {
             this._inStairs = this._stairsLayer.Contains(firstLayer) && this._stairsLayer.Contains(secondLayer);
             this._directionY = (this._animator.transform.rotation * (secondHitInfo.point - firstHitInfo.point)).y;
 
-            if (this._inStairs) {
+            if (this._inStairs && this._directionY > 0F) {
                 this.SetSlopeTargets();
             } else {
                 this.SetFlatGroundTargets();
@@ -64,8 +62,6 @@ public class ElevationController {
     }
 
     public void Update() {
-        this.inStairsSetter(this._inStairs);
-
         this._player.height = this._playerHeight.current;
         this._player.center = this._playerCapsuleCenter.current;
 

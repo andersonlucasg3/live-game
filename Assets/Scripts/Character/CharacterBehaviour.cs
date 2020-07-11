@@ -13,7 +13,6 @@ public class CharacterBehaviour : MonoBehaviour {
         var animator = this.GetComponent<Animator>();
         var charController = this.GetComponent<CharacterController>();
         this._movement.Configure(animator, this._camera, charController);
-        this._movement.isMovingSetter = this._footIK.SetIsMoving;
 
         this._footIK.Configure(animator);
         this._footIK.isEnabled = true;
@@ -25,10 +24,10 @@ public class CharacterBehaviour : MonoBehaviour {
 
         this._movement.Configure(this._input);
         this._elevation.Configure(animator, charController);
-        this._elevation.inStairsSetter = this._footIK.SetInStairs;
     }
 
     protected virtual void FixedUpdate() {
+        this._footIK.FixedUpdate();
         this._movement.FixedUpdate();
         this._elevation.FixedUpdate();
     }
