@@ -14,7 +14,7 @@ public class CharacterBehaviour : MonoBehaviour {
         var charController = this.GetComponent<CharacterController>();
         this._movement.Configure(animator, this._camera, charController);
 
-        this._footIK.Configure(animator);
+        this._footIK.Configure(animator, charController);
         this._footIK.isEnabled = true;
 
         this._input = new InputController();
@@ -29,13 +29,12 @@ public class CharacterBehaviour : MonoBehaviour {
     protected virtual void FixedUpdate() {
         this._footIK.FixedUpdate();
         this._movement.FixedUpdate();
-        this._elevation.FixedUpdate();
+        //this._elevation.FixedUpdate();
     }
 
     protected virtual void Update() {
         this._movement.Update();
-        this._footIK.Update();
-        this._elevation.Update();
+        //this._elevation.Update();
     }
 
     protected virtual void OnAnimatorMove() => this._movement.OnAnimatorMove();
@@ -43,9 +42,8 @@ public class CharacterBehaviour : MonoBehaviour {
 
 #if UNITY_EDITOR
     protected virtual void OnDrawGizmos() {
-        this._footIK.OnDrawGizmos();
         this._movement.OnDrawGizmos();
-        this._elevation.OnDrawGizmos();
+        //this._elevation.OnDrawGizmos();
     }
 #endif
 }

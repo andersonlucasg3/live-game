@@ -2395,9 +2395,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _camera: {fileID: 0}
   _footIK:
-    _footRaycastMaxDistance: 0.7
+    _footRaycastMaxDistance: 1.5
     _footHeightCorrection: 0.12
-    _footCorrectionAcceleration: 4
+    _footCorrectionAcceleration: 10
+    _maxDistanceFromTargetPosition: 0.2
     _raycastLayerMask:
       serializedVersion: 2
       m_Bits: 513
@@ -2415,12 +2416,10 @@ MonoBehaviour:
       serializedVersion: 2
       m_Bits: 513
     _raycastMaxDistance: 2
-    _firstRayDisplacement: {x: 0, y: 0.5, z: 0.05}
-    _secondRayDisplacement: {x: 0, y: 0.5, z: 0.3}
+    _firstRayDisplacement: {x: 0, y: 0.5, z: -0.25}
+    _secondRayDisplacement: {x: 0, y: 0.5, z: 0.25}
     _flatGroundHeight: 1.8
     _flatGroundCenter: {x: 0, y: 0.9, z: 0}
-    _slopeGroundHeight: 1.5
-    _slopeGroundCenter: {x: 0, y: 1, z: 0}
     _drawGizmos: 1
 --- !u!143 &2632379933380996000
 CharacterController:

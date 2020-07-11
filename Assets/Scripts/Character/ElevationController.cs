@@ -5,11 +5,15 @@ using UnityEngine;
 public class ElevationController {
     private Animator _animator = null;
     private CharacterController _player = null;
+
     private bool _inStairs = false;
     private float _directionY = 0F;
+
     private AcceleratedValue _playerHeight = new AcceleratedValue { target = 1.8F };
     private AcceleratedVector3 _playerCapsuleCenter = new AcceleratedVector3 { target = Vector3.up * 0.9F };
 
+    private Vector3? _leftFootHitPosition;
+    private Vector3? _rightFootHitPosition;
     private Vector3? _firstHitPoint;
     private Vector3? _secondHitPoint;
 
@@ -20,8 +24,6 @@ public class ElevationController {
     [SerializeField] private Vector3 _secondRayDisplacement = Vector3.zero;
     [SerializeField] private float _flatGroundHeight = 1.8F;
     [SerializeField] private Vector3 _flatGroundCenter = Vector3.up * 0.9F;
-    [SerializeField] private float _slopeGroundHeight = 1.6F;
-    [SerializeField] private Vector3 _slopeGroundCenter = Vector3.up * 0.8F;
 #if UNITY_EDITOR
     [SerializeField] private bool _drawGizmos = true;
 #endif
@@ -43,18 +45,19 @@ public class ElevationController {
             var firstLayer = firstHitInfo.transform.gameObject.layer;
             var secondLayer = secondHitInfo.transform.gameObject.layer;
             this._inStairs = this._stairsLayer.Contains(firstLayer) && this._stairsLayer.Contains(secondLayer);
-            this._directionY = (this._animator.transform.rotation * (secondHitInfo.point - firstHitInfo.point)).y;
 
-            if (this._inStairs && this._directionY > 0F) {
-                this.SetSlopeTargets();
-            } else {
-                this.SetFlatGroundTargets();
-            }
+            var deltaHit = secondHitInfo.point - firstHitInfo.point;
+            this._directionY = (this._animator.transform.rotation * deltaHit).y;
+
+            var deltaFoot = (this._leftFootHitPosition ?? Vector3.zero) - (this._rightFootHitPosition ?? Vector3.zero);
+
+            var delta = deltaHit * .5F - deltaFoot;
+            this.UpdateCapsuleValues(Mathf.Abs(delta.y) * .5F);
         } else {
             this._inStairs = false;
             this._directionY = 0F;
 
-            this.SetFlatGroundTargets();
+            this.UpdateCapsuleValues(displacement: 0F);
         }
 
         this._playerHeight.FixedUpdate();
@@ -69,18 +72,18 @@ public class ElevationController {
         this._animator.SetFloat(AnimationKeys.directionYProperty, this._directionY);
     }
 
+    public void SetLeftFootHitPosition(Vector3 left)
+        => this._leftFootHitPosition = left;
+    public void SetRightFootHitPosition(Vector3 right)
+        => this._rightFootHitPosition = right;
+
     private Ray GetRay(Vector3 displacement) {
         return new Ray(this._animator.transform.position + this._animator.transform.rotation * displacement, Vector3.down);
     }
 
-    private void SetSlopeTargets() {
-        this._playerHeight.target = this._slopeGroundHeight;
-        this._playerCapsuleCenter.target = this._slopeGroundCenter;
-    }
-
-    private void SetFlatGroundTargets() {
-        this._playerHeight.target = this._flatGroundHeight;
-        this._playerCapsuleCenter.target = this._flatGroundCenter;
+    private void UpdateCapsuleValues(float displacement) {
+        this._playerHeight.target = this._flatGroundHeight - displacement;
+        this._playerCapsuleCenter.target = this._flatGroundCenter + Vector3.up * displacement;
     }
 
 #if UNITY_EDITOR
