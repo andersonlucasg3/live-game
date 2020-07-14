@@ -24,6 +24,7 @@ public class ElevationController {
     [SerializeField] private Vector3 _secondRayDisplacement = Vector3.zero;
     [SerializeField] private float _flatGroundHeight = 1.8F;
     [SerializeField] private Vector3 _flatGroundCenter = Vector3.up * 0.9F;
+    [SerializeField] private float _capsuleAdjustmentAcceleration = 4F;
 #if UNITY_EDITOR
     [SerializeField] private bool _drawGizmos = true;
 #endif
@@ -32,8 +33,8 @@ public class ElevationController {
         this._animator = animator;
         this._player = player;
 
-        this._playerHeight.acceleration = 4F; // TODO: property
-        this._playerCapsuleCenter.acceleration = 4F;
+        this._playerHeight.acceleration = this._capsuleAdjustmentAcceleration;
+        this._playerCapsuleCenter.acceleration = this._capsuleAdjustmentAcceleration;
     }
 
     public void FixedUpdate() {
@@ -42,19 +43,14 @@ public class ElevationController {
             this._firstHitPoint = firstHitInfo.point;
             this._secondHitPoint = secondHitInfo.point;
 
-            var firstLayer = firstHitInfo.transform.gameObject.layer;
-            var secondLayer = secondHitInfo.transform.gameObject.layer;
-            this._inStairs = this._stairsLayer.Contains(firstLayer) && this._stairsLayer.Contains(secondLayer);
-
             var deltaHit = secondHitInfo.point - firstHitInfo.point;
             this._directionY = (this._animator.transform.rotation * deltaHit).y;
 
             var deltaFoot = (this._leftFootHitPosition ?? Vector3.zero) - (this._rightFootHitPosition ?? Vector3.zero);
 
             var delta = deltaHit * .5F - deltaFoot;
-            this.UpdateCapsuleValues(Mathf.Abs(delta.y) * .5F);
+            this.UpdateCapsuleValues(Mathf.Abs(delta.y) * 0.25F);
         } else {
-            this._inStairs = false;
             this._directionY = 0F;
 
             this.UpdateCapsuleValues(displacement: 0F);
@@ -70,6 +66,20 @@ public class ElevationController {
 
         this._animator.SetBool(AnimationKeys.inStairsProperty, this._inStairs);
         this._animator.SetFloat(AnimationKeys.directionYProperty, this._directionY);
+    }
+
+    public void OnTriggerEnter(Collider other) {
+        var colliderLayer = other.gameObject.layer;
+        if (this._stairsLayer.Contains(colliderLayer)) {
+            this._inStairs = true;
+        }
+    }
+
+    public void OnTriggerExit(Collider other) {
+        var colliderLayer = other.gameObject.layer;
+        if (this._stairsLayer.Contains(colliderLayer)) {
+            this._inStairs = false;
+        }
     }
 
     public void SetLeftFootHitPosition(Vector3 left)
@@ -96,8 +106,8 @@ public class ElevationController {
         ray = this.GetRay(this._secondRayDisplacement);
         Gizmos.DrawLine(ray.origin, ray.GetPoint(this._raycastMaxDistance));
 
-        if (this._firstHitPoint.HasValue) { Gizmos.DrawSphere(this._firstHitPoint.Value, 0.1F); }
-        if (this._secondHitPoint.HasValue) { Gizmos.DrawSphere(this._secondHitPoint.Value, 0.1F); }
+        if (this._firstHitPoint.HasValue) { Gizmos.DrawSphere(this._firstHitPoint.Value, 0.02F); }
+        if (this._secondHitPoint.HasValue) { Gizmos.DrawSphere(this._secondHitPoint.Value, 0.02F); }
     }
 #endif
 

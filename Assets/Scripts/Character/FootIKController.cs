@@ -6,52 +6,79 @@ public class FootIKController {
     private Animator _animator;
     private CharacterController _player;
 
-    private Vector3 _leftFootIKPosition = Vector3.zero,
-                    _leftFootPosition = Vector3.zero;
-    private Quaternion _leftFootIKRotation = Quaternion.identity,
-                       _leftFootRotation = Quaternion.identity;
+    private Vector3 _leftFootIKPosition = Vector3.zero;
+    private Vector3 _leftFootPosition = Vector3.zero;
+    private Quaternion _leftFootIKRotation = Quaternion.identity;
+    private Quaternion _leftFootRotation = Quaternion.identity;
 
-    private Vector3 _rightFootIKPosition = Vector3.zero,
-                    _rightFootPosition = Vector3.zero;
-    private Quaternion _rightFootIKRotation = Quaternion.identity,
-                       _rightFootRotation = Quaternion.identity;
+    private Vector3 _rightFootIKPosition = Vector3.zero;
+    private Vector3 _rightFootPosition = Vector3.zero;
+    private Quaternion _rightFootIKRotation = Quaternion.identity;
+    private Quaternion _rightFootRotation = Quaternion.identity;
 
-    private Vector3 _currentNormal;
+    private AcceleratedVector3 _currentNormal = AcceleratedVector3.zero;
+    private AcceleratedValue _rightFootWeight = AcceleratedValue.zero;
+    private AcceleratedValue _leftFootWeight = AcceleratedValue.zero;
     
     [SerializeField] private float _footRaycastMaxDistance = 1F;
     [SerializeField] private LayerMask _raycastLayerMask = 0;
+    [SerializeField] private float _footCorrectionAcceleration = 1F;
+#if UNITY_EDITOR
+    [SerializeField] private bool _drawGizmos = true;
+#endif
 
     public bool isEnabled { get; set; } = true;
+
+    public Action<Vector3> rightFootPositionSetter { get; set; }
+    public Action<Vector3> leftFootPositionSetter { get; set; }
 
     public void Configure(Animator animator, CharacterController player) {
         this._player = player;
         this._animator = animator;
+
+        this._rightFootWeight.acceleration = this._footCorrectionAcceleration;
+        this._leftFootWeight.acceleration = this._footCorrectionAcceleration;
+        this._currentNormal.acceleration = this._footCorrectionAcceleration;
     }
 
     public void FixedUpdate() {
         if (!this.isEnabled) { return; }
 
-        this._currentNormal = this.RaycastFromPosition(this._player.transform.position)?.normal ?? Vector3.up;
+        this._currentNormal.target = this.RaycastFromPosition(this._player.transform.position)?.normal ?? Vector3.up;
 
         var rightHit = this.RaycastFromPosition(this._rightFootIKPosition);
         if (rightHit.HasValue) {
             rightHit = this.AdjustRaycastIfNeeded(rightHit.Value, this._player.transform.position);
             this.UpdateValues(rightHit.Value.point, rightHit.Value.normal, this._rightFootIKRotation,
                         out this._rightFootPosition, out this._rightFootRotation);
+
+            this._rightFootWeight.target = 1F;
         } else {
             this._rightFootPosition = this._rightFootIKPosition;
             this._rightFootRotation = this._rightFootIKRotation;
+
+            this._rightFootWeight.target = 0F;
         }
         var leftHit = this.RaycastFromPosition(this._leftFootIKPosition);
         if (leftHit.HasValue) {
             leftHit = this.AdjustRaycastIfNeeded(leftHit.Value, this._player.transform.position);
             UpdateValues(leftHit.Value.point, leftHit.Value.normal, this._leftFootIKRotation,
                         out this._leftFootPosition, out this._leftFootRotation);
+
+            this._leftFootWeight.target = 1F;
         } else {
             this._leftFootPosition = this._leftFootIKPosition;
             this._leftFootRotation = this._leftFootIKRotation;
+
+            this._leftFootWeight.target = 0F;
         }
 
+        this._rightFootWeight.FixedUpdate();
+        this._leftFootWeight.FixedUpdate();
+        this._currentNormal.FixedUpdate();
+
+        this.leftFootPositionSetter?.Invoke(this._leftFootPosition);
+        this.rightFootPositionSetter?.Invoke(this._rightFootPosition);
     }
 
     public void OnAnimatorIK() {
@@ -62,39 +89,29 @@ public class FootIKController {
         this._leftFootIKPosition = this._animator.GetIKPosition(AvatarIKGoal.LeftFoot);
         this._leftFootIKRotation = this._animator.GetIKRotation(AvatarIKGoal.LeftFoot);
 
-        this.MoveFootToPosition(this._rightFootIKPosition, this._rightFootPosition, this._rightFootIKRotation, this._rightFootRotation, AvatarIKGoal.RightFoot);
-        this.MoveFootToPosition(this._leftFootIKPosition, this._leftFootPosition, this._leftFootIKRotation, this._leftFootRotation, AvatarIKGoal.LeftFoot);
+        this.MoveFootToPosition(this._rightFootIKPosition, this._rightFootPosition, this._rightFootRotation, AvatarIKGoal.RightFoot, this._rightFootWeight.current);
+        this.MoveFootToPosition(this._leftFootIKPosition, this._leftFootPosition, this._leftFootRotation, AvatarIKGoal.LeftFoot, this._leftFootWeight.current);
     }
 
-    private void MoveFootToPosition(Vector3 fromPosition, Vector3 position, Quaternion fromRotation, Quaternion rotation, AvatarIKGoal foot) {
-        var velocityMagnitude = this._player.velocity.normalized.magnitude;
-        var time = 1 - this.Distance(fromPosition.normalized, position.normalized);
+#if UNITY_EDITOR
+    public void OnDrawGizmos() {
 
-        if (velocityMagnitude == 0) {
-            var weight = 1 - velocityMagnitude;
+    }
+#endif
 
-            var targetPosition = Vector3.Slerp(fromPosition, position, time);
+    private void MoveFootToPosition(Vector3 fromPosition, Vector3 position, Quaternion rotation, AvatarIKGoal foot, float weight) {
+        var normalRotation = Quaternion.FromToRotation(Vector3.up, this._currentNormal.current);
+        var center = this._player.transform.position;
+        var rotatedPosition = this.RotatePointAroundPivot(fromPosition, center, normalRotation.eulerAngles);
 
-            this._animator.SetIKPosition(foot, targetPosition);
-            this._animator.SetIKPositionWeight(foot, weight);
+        var time = 1F - Mathf.Min(1F, this._player.velocity.magnitude);
+        var targetPosition = Vector3.Lerp(rotatedPosition, position, time);
 
-            var targetRotation = Quaternion.Slerp(fromRotation, rotation, time);
+        this._animator.SetIKPosition(foot, targetPosition);
+        this._animator.SetIKPositionWeight(foot, weight);
 
-            this._animator.SetIKRotation(foot, targetRotation);
-            this._animator.SetIKRotationWeight(foot, weight);
-        } else {
-            var normalDirection = Quaternion.FromToRotation(Vector3.up, this._currentNormal);
-            var center = this._player.transform.position;
-            var targetPosition = this.RotatePointAroundPivot(fromPosition, center, normalDirection.eulerAngles);
-
-            this._animator.SetIKPosition(foot, targetPosition);
-            this._animator.SetIKPositionWeight(foot, 1F);
-
-            var targetRotation = Quaternion.Slerp(fromRotation, rotation, time);
-
-            this._animator.SetIKRotation(foot, targetRotation);
-            this._animator.SetIKRotationWeight(foot, 1F);
-        }
+        this._animator.SetIKRotation(foot, rotation);
+        this._animator.SetIKRotationWeight(foot, weight);
     }
 
     private Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angles) {
@@ -109,14 +126,12 @@ public class FootIKController {
         outPosition = point + rotation * Vector3.up * 0.15F;
     }
 
-    private float Distance(Vector3 a, Vector3 b) {
-        return Vector3.Distance(a, b);
-    }
-
     private RaycastHit? RaycastFromPosition(Vector3 raycastPosition) {
-        var upDisplacement = Vector3.up * 0.5F;
+        var upDisplacement = Vector3.up;
 #if UNITY_EDITOR
-        Debug.DrawLine(raycastPosition + upDisplacement, raycastPosition + upDisplacement + Vector3.down * this._footRaycastMaxDistance, Color.yellow);
+        if (this._drawGizmos) {
+            Debug.DrawLine(raycastPosition + upDisplacement, raycastPosition + upDisplacement + Vector3.down * this._footRaycastMaxDistance, Color.yellow);
+        }
 #endif
         Physics.Raycast(raycastPosition + upDisplacement, Vector3.down, out RaycastHit hit, this._footRaycastMaxDistance, this._raycastLayerMask);
         return hit;
