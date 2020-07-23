@@ -30,6 +30,8 @@ public class CharacterBehaviour : MonoBehaviour {
         this._footIK.FixedUpdate();
         this._movement.FixedUpdate();
         this._elevation.FixedUpdate();
+
+        this._camera.targetPosition = this.transform.position;
     }
 
     protected virtual void Update() {
@@ -37,9 +39,6 @@ public class CharacterBehaviour : MonoBehaviour {
         this._elevation.Update();
     }
 
-    protected virtual void OnTriggerEnter(Collider other) => this._elevation.OnTriggerEnter(other);
-    protected virtual void OnTriggerExit(Collider other) => this._elevation.OnTriggerExit(other);
-    protected virtual void OnAnimatorMove() => this._movement.OnAnimatorMove();
     protected virtual void OnAnimatorIK(int layerIndex) => this._footIK.OnAnimatorIK();
 
 #if UNITY_EDITOR

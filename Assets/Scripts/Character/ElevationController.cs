@@ -17,7 +17,6 @@ public class ElevationController {
     private Vector3? _firstHitPoint;
     private Vector3? _secondHitPoint;
 
-    [SerializeField] private LayerMask _stairsLayer = 0;
     [SerializeField] private LayerMask _raycastLayerMask = 0;
     [SerializeField] private float _raycastMaxDistance = 1F;
     [SerializeField] private Vector3 _firstRayDisplacement = Vector3.zero;
@@ -58,28 +57,14 @@ public class ElevationController {
 
         this._playerHeight.FixedUpdate();
         this._playerCapsuleCenter.FixedUpdate();
+
+        this._player.height = this._playerHeight.current;
+        this._player.center = this._playerCapsuleCenter.current;
     }
 
     public void Update() {
-        this._player.height = this._playerHeight.current;
-        this._player.center = this._playerCapsuleCenter.current;
-
         this._animator.SetBool(AnimationKeys.inStairsProperty, this._inStairs);
         this._animator.SetFloat(AnimationKeys.directionYProperty, this._directionY);
-    }
-
-    public void OnTriggerEnter(Collider other) {
-        var colliderLayer = other.gameObject.layer;
-        if (this._stairsLayer.Contains(colliderLayer)) {
-            this._inStairs = true;
-        }
-    }
-
-    public void OnTriggerExit(Collider other) {
-        var colliderLayer = other.gameObject.layer;
-        if (this._stairsLayer.Contains(colliderLayer)) {
-            this._inStairs = false;
-        }
     }
 
     public void SetLeftFootHitPosition(Vector3 left)
