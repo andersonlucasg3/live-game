@@ -27,7 +27,7 @@ ModelImporter:
       humanoid transforms and has rotation animation that will be discarded.\n\t'mixamorig10:RightShoulder'
       is inbetween humanoid transforms and has rotation animation that will be discarded.\n"
     animationRetargetingWarnings: 
-    animationDoRetargetingWarnings: 0
+    animationDoRetargetingWarnings: 1
     importAnimatedCustomProperties: 0
     importConstraints: 0
     animationCompression: 3

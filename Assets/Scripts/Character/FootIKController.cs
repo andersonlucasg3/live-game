@@ -46,32 +46,20 @@ public class FootIKController {
 
         this._currentNormal.target = this.RaycastFromPosition(this._player.transform.position)?.normal ?? Vector3.up;
 
-        var rightHit = this.RaycastFromPosition(this._rightFootIKPosition);
-        if (rightHit.HasValue) {
-            rightHit = this.AdjustRaycastIfNeeded(rightHit.Value, this._player.transform.position);
-            this.UpdateValues(rightHit.Value.point, rightHit.Value.normal, this._rightFootIKRotation,
-                        out this._rightFootPosition, out this._rightFootRotation);
-
-            this._rightFootWeight.target = 1F;
-        } else {
-            this._rightFootPosition = this._rightFootIKPosition;
-            this._rightFootRotation = this._rightFootIKRotation;
-
-            this._rightFootWeight.target = 0F;
-        }
-        var leftHit = this.RaycastFromPosition(this._leftFootIKPosition);
-        if (leftHit.HasValue) {
-            leftHit = this.AdjustRaycastIfNeeded(leftHit.Value, this._player.transform.position);
-            UpdateValues(leftHit.Value.point, leftHit.Value.normal, this._leftFootIKRotation,
-                        out this._leftFootPosition, out this._leftFootRotation);
-
-            this._leftFootWeight.target = 1F;
-        } else {
-            this._leftFootPosition = this._leftFootIKPosition;
-            this._leftFootRotation = this._leftFootIKRotation;
-
-            this._leftFootWeight.target = 0F;
-        }
+        this.CalculateFoot(
+            this._rightFootIKPosition,
+            this._rightFootIKRotation,
+            out this._rightFootPosition,
+            out this._rightFootRotation,
+            ref this._rightFootWeight
+        );
+        this.CalculateFoot(
+            this._leftFootIKPosition,
+            this._leftFootIKRotation,
+            out this._leftFootPosition,
+            out this._leftFootRotation,
+            ref this._leftFootWeight
+        );
 
         this._rightFootWeight.FixedUpdate();
         this._leftFootWeight.FixedUpdate();
@@ -98,6 +86,19 @@ public class FootIKController {
 
     }
 #endif
+
+    private void CalculateFoot(Vector3 footIKPosition, Quaternion footIKRotation, out Vector3 footPosition, out Quaternion footRotation, ref AcceleratedValue footWeight) {
+        var hit = this.RaycastFromPosition(footIKPosition);
+        if (hit.HasValue) {
+            this.UpdateValues(hit.Value.point, hit.Value.normal, footIKRotation, out footPosition, out footRotation);
+            footWeight.target = 1F;
+        } else {
+            footPosition = footIKPosition;
+            footRotation = footIKRotation;
+
+            footWeight.target = 0F;
+        }
+    }
 
     private void MoveFootToPosition(Vector3 fromPosition, Vector3 position, Quaternion rotation, AvatarIKGoal foot, float weight) {
         var normalRotation = Quaternion.FromToRotation(Vector3.up, this._currentNormal.current);
@@ -134,13 +135,6 @@ public class FootIKController {
         }
 #endif
         Physics.Raycast(raycastPosition + upDisplacement, Vector3.down, out RaycastHit hit, this._footRaycastMaxDistance, this._raycastLayerMask);
-        return hit;
-    }
-
-    private RaycastHit AdjustRaycastIfNeeded(RaycastHit hit, Vector3 originalPosition) {
-        if (Mathf.Abs(hit.point.y - originalPosition.y) > 0.2F) {
-            return this.RaycastFromPosition(Vector3.Lerp(hit.point, originalPosition, 0.5F)) ?? hit;
-        }
         return hit;
     }
 }

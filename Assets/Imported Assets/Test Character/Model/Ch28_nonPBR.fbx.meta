@@ -506,6 +506,22 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
+    - boneName: mixamorig10:LeftShoulder
+      humanName: LeftShoulder
+      limit:
+        min: {x: -20, y: -20, z: -20}
+        max: {x: 20, y: 20, z: 20}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
+    - boneName: mixamorig10:RightShoulder
+      humanName: RightShoulder
+      limit:
+        min: {x: -20, y: -20, z: -20}
+        max: {x: 20, y: 20, z: 20}
+        value: {x: 0, y: 0, z: 0}
+        length: 0
+        modified: 0
     skeleton:
     - name: Ch28_nonPBR(Clone)
       parentName: 
@@ -715,7 +731,7 @@ ModelImporter:
     - name: mixamorig10:LeftHandThumb1
       parentName: mixamorig10:LeftHand
       position: {x: 0.029352698, y: 0.03532952, z: 0.01297763}
-      rotation: {x: 0.21325973, y: -0.07899391, z: -0.22119823, w: 0.9483415}
+      rotation: {x: 0.07443379, y: 0.0007133931, z: -0.32302237, w: 0.94345945}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig10:LeftHandThumb2
       parentName: mixamorig10:LeftHandThumb1
@@ -850,7 +866,7 @@ ModelImporter:
     - name: mixamorig10:RightHandThumb1
       parentName: mixamorig10:RightHand
       position: {x: -0.029571792, y: 0.03571133, z: 0.0132123325}
-      rotation: {x: 0.20893013, y: 0.07665961, z: 0.22539175, w: 0.9485094}
+      rotation: {x: 0.06872888, y: -0.002381418, z: 0.32580006, w: 0.9429343}
       scale: {x: 1, y: 1, z: 1}
     - name: mixamorig10:RightHandThumb2
       parentName: mixamorig10:RightHandThumb1
