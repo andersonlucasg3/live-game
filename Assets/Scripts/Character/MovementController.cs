@@ -41,7 +41,7 @@ class MovementController : InputController.IMovementListener {
         this._hasMovement = this._movementVector.target.magnitude > 0F;
         this._isPivoting = this.IsPivoting(this._animator.GetCurrentAnimatorStateInfo(0));
 
-        this._playerDirectionVector.target = this.GetDirectionFromCamera();
+        this._playerDirectionVector.target = this._player.transform.forward;
         this._currentAngle = this.CalculateAngle();
 
         if (this._isPivoting) {
@@ -71,17 +71,6 @@ class MovementController : InputController.IMovementListener {
         }
     }
 
-    public void OnAnimatorMove() {
-        var deltaPosition = this._animator.deltaPosition;
-        deltaPosition.y = 0;
-        this._player.Move(deltaPosition);
-        var direction = this._player.transform.forward;
-        if (this._animator.velocity.magnitude > 0.5F) { direction += this._player.transform.right * this._distanceFromDirection * 0.05F; }
-        this._player.transform.forward = this._animator.deltaRotation * direction;
-
-        this._camera.targetPosition = this._player.transform.position;
-    }
-
     private Vector3 GetDirectionFromCamera() {
         if (this._movementVector.target == Vector2.zero) { return this._camera.transform.forward; }
         var moveDirection = this._camera.transform.rotation * this._movementVector.current.ToDirectionVector();
@@ -90,8 +79,8 @@ class MovementController : InputController.IMovementListener {
     }
 
     private float CalculateAngle() {
-        var cameraDirection = this._playerDirectionVector.target;
-        var playerDirection = this._player.transform.forward;
+        var cameraDirection = this.GetDirectionFromCamera();
+        var playerDirection = this._playerDirectionVector.target;
         var angle = Vector3.Angle(cameraDirection, playerDirection);
         var cross = Vector3.Cross(cameraDirection, playerDirection);
         if (cross.y > 0) { angle *= -1; }
@@ -99,9 +88,9 @@ class MovementController : InputController.IMovementListener {
     }
 
     private float DistanceFromDirection() {
-        var inputDirection = this._player.transform.forward;
+        var inputDirection = this.GetDirectionFromCamera();
         var playerDirection = this._playerDirectionVector.current;
-        return Vector3.Cross(inputDirection, playerDirection).y * 2F;
+        return Vector3.Cross(playerDirection, inputDirection).y * .6F;
     }
 
     private bool IsPivoting(AnimatorStateInfo stateInfo) {
@@ -126,10 +115,10 @@ class MovementController : InputController.IMovementListener {
             Gizmos.DrawLine(ray.origin, ray.GetPoint(2F));
         }
 
-        ray.direction = this._player.transform.forward;
+        ray.direction = this.GetDirectionFromCamera();
         DrawLine(Color.blue);
 
-        ray.direction = this._playerDirectionVector.target;
+        ray.direction = this._playerDirectionVector.current;
         DrawLine(Color.yellow);
     }
 #endif

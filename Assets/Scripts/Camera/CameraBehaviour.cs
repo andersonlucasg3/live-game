@@ -6,6 +6,7 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
     [SerializeField] private Vector3 _lookAtDisplacement = Vector3.zero;
     [SerializeField] private float _cameraMinRotation = 90F;
     [SerializeField] private float _cameraMaxRotation = 180F;
+    [SerializeField] private float _windowsCameraAccelerationReduction = 0.1F;
 #if UNITY_EDITOR
     [SerializeField] private bool _showGizmos = true;
 #endif
@@ -62,6 +63,7 @@ public class CameraBehaviour : MonoBehaviour, InputController.ICameraListener {
 #endif
 
     void InputController.ICameraListener.Rotate(Vector2 mouseDelta) {
+        if (Application.platform.IsWindowsPlatform()) { mouseDelta *= this._windowsCameraAccelerationReduction; }
         this._rotation.y += mouseDelta.x;
         this._rotation.x -= mouseDelta.y;
         this._rotation.x = Mathf.Clamp(this._rotation.x, this._cameraMinRotation, this._cameraMaxRotation);
